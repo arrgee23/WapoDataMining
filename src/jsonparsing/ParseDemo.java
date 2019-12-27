@@ -9,19 +9,9 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 import java.io.File;
 import java.util.Scanner;
 public class ParseDemo {
-    /*
-    LinkedList <Report> reports readAllReports(JsonParser jp) throws Exception{
-        JsonToken current;
-        current = jp.nextToken();
-        LinkedList <Report> reports = new LinkedList<Report>();
-        if (current != JsonToken.START_OBJECT) {
-            System.out.println("Error: root should be object: quiting.");
-            return null;
-        }
-        return null;
-    }
-    */
+    
     static Report readOneReport(JsonParser jp) throws Exception{
+        
         Report r = new Report();
 
         JsonToken current;
@@ -121,7 +111,7 @@ public class ParseDemo {
                 break;
             r = readOneReport(jp);
             if(r!=null)
-            	System.out.println(r.title);
+            	System.out.println(r.content);
         }while(r!=null);
         s.close();
     }

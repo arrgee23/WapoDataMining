@@ -1,5 +1,7 @@
 package jsonparsing;
 
+import org.jsoup.Jsoup;
+
 public class Report{
     String id;
     String url;
@@ -55,6 +57,7 @@ public class Report{
 		return content;
 	}
 	public void setContent(String content) {
-		this.content = content;
+		
+		this.content = Jsoup.parse(content).text();
 	}
 }
