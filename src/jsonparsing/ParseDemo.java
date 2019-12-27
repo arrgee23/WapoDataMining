@@ -105,8 +105,8 @@ public class ParseDemo {
 
     @SuppressWarnings("deprecation")
     public static void main(String[] args) throws Exception {
-		String filename = "wapo";
-		
+		String filename = "wapo"; // comment if not using wapo dataset
+		// String filename = "one.json"; // uncomment to run without wapo dataset
         JsonFactory f = new MappingJsonFactory();
         JsonParser jp = f.createJsonParser(new File(filename));
         //JsonParser j = f.createParser(null);
