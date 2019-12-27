@@ -7,3 +7,4 @@ for parsing json. with streaming capabilities.
 API: https://www.baeldung.com/jackson-streaming-api
 
 ### We Use Lucene Library for data analysis
+### Jsoup for html format to normal text parsing
