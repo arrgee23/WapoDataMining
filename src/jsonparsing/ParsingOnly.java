@@ -1,10 +1,10 @@
 package jsonparsing;
 
-
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.File;
@@ -13,8 +13,33 @@ import java.util.Iterator;
 
 
 public class ParsingOnly {
-	public static final int TOTAL_DOC_NO = 10;// 0; //608180;
+	public static final int TOTAL_DOC_NO = 595037;//608180;
 	public static final String INDEX_PATH = "/home/arrgee/Documents/index";
+	
+	// generic deapth first traversal
+	public static void traverse(JsonNode root){
+    
+		if(root.isObject()){
+			Iterator<String> fieldNames = root.fieldNames();
+			System.out.println("object");
+			while(fieldNames.hasNext()) {
+				String fieldName = fieldNames.next();
+				JsonNode fieldValue = root.get(fieldName);
+				traverse(fieldValue);
+			}
+		} else if(root.isArray()){
+			System.out.println("array");
+			ArrayNode arrayNode = (ArrayNode) root;
+			for(int i = 0; i < arrayNode.size(); i++) {
+				JsonNode arrayElement = arrayNode.get(i);
+				traverse(arrayElement);
+			}
+		} else {
+			// JsonNode root represents a single value field - do something with it.
+			System.out.println(root.asText());
+			
+		}
+	}
 	
 	
 	static Report readOneReport2(JsonParser parser) {
@@ -22,22 +47,73 @@ public class ParsingOnly {
 		//JsonParser parser = mapper.getFactory().createParser(new File(...));
 		try {
 			if(parser.nextToken() != JsonToken.START_OBJECT) {
-			  throw new IllegalStateException("Expected an array");
+			  throw new IllegalStateException("Expected start object");
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//while(parser.nextToken() == JsonToken.START_OBJECT) {
-		  // read everything from this START_OBJECT to the matching END_OBJECT
-		  // and return it as a tree model ObjectNode
-		ObjectNode node = null;  
+		JsonNode node = null;  
 		try {
 			node = mapper.readTree(parser);
+			//traverse(node);
+			
 			//JsonNode n = node.get("id");
 			//System.out.println(n.textValue());
+
+			JsonNode id,url,title,date,source,type,author;
+
+			id = node.get("id");
+			url = node.get("article_url");
+			title = node.get("title");
+			date = node.get("published_date");
+			source = node.get("source");
+			type = node.get("type");
+			author = node.get("author");
+			// read the contents array
+			ArrayNode contentsArr = (ArrayNode)node.get("contents");
+
+			if(id.isNull() || id==null || title.isNull()|| title==null || type==null || type.isNull() || contentsArr==null || contentsArr.isNull())
+				return null;
+			else
+			{
+				String idstr=id.asText(),urlstr=url.asText(),titlestr=title.asText(),
+				datestr=date.asText(),authorstr=author.asText(),typestr=type.asText(),sourcestr=source.asText();
+
+				String str = "";
+				
+				for(int i=5;i<contentsArr.size();i++){
+					JsonNode elem = contentsArr.get(i);
+					if(elem!=null){
+						JsonNode n = elem.get("content");
+						if(n!=null)
+							str+=n.textValue();
+						}
+				}
+				//System.out.println(str);
+				//System.out.println("");
+
+				if(idstr.equals("") || titlestr.equals("") || typestr.equals("") || str.equals(""))
+					return null;
+
+				Report r = new Report();
+
+				r.setArticleType(typestr);
+				r.setAuthor(authorstr);
+				r.setContent(str);
+				r.setDate(datestr);
+				r.setId(idstr);
+				r.setSource(sourcestr);
+				r.setTitle(titlestr);
+				r.setUrl(urlstr);
+
+				return r;
+
+			}
+
+
 			
-			System.out.println(node.get("content").textValue());
+			//System.out.println(node.get("contents").textValue());
+			
 				
 		} catch (JsonProcessingException e) {
 			// TODO Auto-generated catch block
@@ -150,7 +226,7 @@ public class ParsingOnly {
 	}
 
 	@SuppressWarnings("deprecation")
-	public static void main(String[] args) // throws Exception {
+	public static void main2(String[] args) // throws Exception {
 	{
 		String filename = "wapo"; // comment if not using wapo dataset
 		// String filename = "one.json"; // uncomment to run without wapo dataset
@@ -160,14 +236,15 @@ public class ParsingOnly {
 		try {
 			jp = f.createJsonParser(new File(filename));
 		} catch (JsonParseException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+
 		Report r = null;
 		int i=0;
+		long missingCount = 0;
+		long count = 0;
 
 		for (i = 0; i < TOTAL_DOC_NO; i++) {
 
@@ -175,11 +252,16 @@ public class ParsingOnly {
 			r = readOneReport2(jp);
 
 			System.out.print(i+1);
-			if(r!=null)
+			if(r!=null){
 				System.out.println(" "+r.id);
-			else
+				count++;
+			}
+			else{
 				System.out.println();
+				missingCount++;
+			}
 		}
+		System.out.println(count+"   "+missingCount);
 
 	}
 }

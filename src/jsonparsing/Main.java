@@ -27,109 +27,14 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
+import jsonparsing.*;
 
 public class Main {
-    public static final int TOTAL_DOC_NO = 60820;// 0; //608180;
+    public static final int TOTAL_DOC_NO = 595037;// 0; //608180;
     public static final String INDEX_PATH = "/home/arrgee/Documents/index";
 
-    static Report readOneReport(JsonParser jp) //throws Exception {
-    {
-        Report r = new Report();
-
-        JsonToken current=null;
-        try {
-            current = jp.nextToken();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        if (current == null) { // end of file
-            return null;
-        }
-
-        if (current != JsonToken.START_OBJECT) {
-            System.out.println("Json structurre error in reading list");
-            return null;
-
-        }
-
-        try {
-            JsonToken temp = jp.nextToken();
-            while (temp != JsonToken.END_OBJECT && temp!=null)
-            {//&& jp.nextToken() != null) {
-			    String fieldname = jp.getCurrentName();
-			    // String id=null,url=null,title=null,author=null,date = null;
-			    if ("id".equals(fieldname)) {
-			        temp = jp.nextToken();
-			        r.setId(jp.getText());
-			    }
-
-			    if ("article_url".equals(fieldname)) {
-			        temp = jp.nextToken();
-			        r.setUrl(jp.getText());
-			    }
-
-			    if ("title".equals(fieldname)) {
-			        temp = jp.nextToken();
-			        r.setTitle(jp.getText());
-			    }
-
-			    if ("author".equals(fieldname)) {
-			        temp = jp.nextToken();
-			        r.setAuthor(jp.getText());
-			    }
-
-			    if ("published_date".equals(fieldname)) {
-			        temp = jp.nextToken();
-			        r.setDate(jp.getText());
-			    }
-
-			    // System.out.printf("%s\n %s\n %s\n %s\n %s\n",id,url,title,author,date);
-			    int count = 0;
-			    String all = "";
-			    if ("contents".equals(fieldname)) {
-			        current = jp.nextToken();
-                    temp = current;
-			        while (current != JsonToken.END_ARRAY) {
-
-			            if (current == JsonToken.FIELD_NAME && jp.getCurrentName().equals("content")) {
-			                current = jp.nextToken();
-			                count++;
-			                if (count > 4) {
-			                    String str = jp.getText();
-
-			                    if (str != null)
-			                        all += str;
-			                }
-			            }
-			            // System.out.println(jp.getText());
-			            else
-			                current = jp.nextToken();
-			        }
-			        // System.out.println(all);
-			        r.setContent(all);
-			    }
-			    if ("type".equals(fieldname)) {
-			        temp = jp.nextToken();
-			        r.setArticleType(jp.getText());
-			    }
-			    if ("source".equals(fieldname)) {
-			        temp = jp.nextToken();
-			        r.setSource(jp.getText());
-                }
-                temp = jp.nextToken();
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-        return r;
-    }
-
     @SuppressWarnings("deprecation")
-    public static void main2(String[] args) // throws Exception {
+    public static void main(String[] args) // throws Exception {
     {
         String filename = "wapo"; // comment if not using wapo dataset
         // String filename = "one.json"; // uncomment to run without wapo dataset
@@ -152,8 +57,8 @@ public class Main {
         /* Index the documents */
         String indexPath = INDEX_PATH;
         /// String docsPath = null;
-        boolean create = true;
-        boolean createindex = true;
+        boolean append = false;
+        boolean createindex = false; // re index all
 
         Directory directory = null;
         try {
@@ -170,7 +75,7 @@ public class Main {
 
                 // Analyzer analyzer = new StandardAnalyzer();
                 IndexWriterConfig config = new IndexWriterConfig(analyzer);
-                if (create) {
+                if (!append) {
                     // Create a new index in the directory, removing any
                     // previously indexed documents:
                     config.setOpenMode(OpenMode.CREATE);
@@ -195,10 +100,10 @@ public class Main {
                     d = new Document();
 
                     // parse a document from json and store in index
-                    r = readOneReport(jp);
+                    r = ParsingOnly.readOneReport2(jp);
                     
                     if (r == null)
-                        break;// Add fields to the document
+                        continue;// Add fields to the document
 
                     // StringField.TYPE_STORED store the content as a single token
                     if(r.id!=null) {
@@ -258,9 +163,9 @@ public class Main {
                     // add the document to index
                     iwriter.addDocument(d);
 
-                    //if (i % 1000 == 0) {
+                    if (i % 1000 == 0) {
                         System.out.printf("Indexed %d documents...\n", i + 1);
-                    //}
+                    }
                 }
                 
                 //System.out.printf("Indexed total %d documents...\n", i + 1);
