@@ -1,1 +1,5 @@
 *.class
+wapo
+bin/jsonparsing/build.sh
+src/jsonparsing/build.sh
+.vscode/launch.json
