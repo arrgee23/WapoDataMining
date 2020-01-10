@@ -7,6 +7,8 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FieldType;
+//import org.apache.lucene.document.Field.TermVector;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
@@ -22,7 +24,9 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.QueryBuilder;
 import org.apache.lucene.index.*;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,13 +34,27 @@ import java.util.Scanner;
 import jsonparsing.*;
 
 public class Main {
-    public static final int TOTAL_DOC_NO = 595037;// 0; //608180;
+    // 594902 indexed (id not null or content title both not null)
+    public static final int TOTAL_DOC_NO = 595037;
     public static final String INDEX_PATH = "/home/arrgee/Documents/index";
-
+    public static final String filename = "wapo";
     @SuppressWarnings("deprecation")
+    public static void main2(String[] args){
+        
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            String line;
+            int count = 0;
+            while ((line = br.readLine()) != null) {
+               System.out.println(++count);
+            }
+            System.out.println(line);
+        }catch(Exception e){
+            
+        }
+    }
     public static void main(String[] args) // throws Exception {
     {
-        String filename = "wapo"; // comment if not using wapo dataset
+        //"/home/arrgee/Documents/WashingtonPost.v2/data/foo"; // comment if not using wapo dataset
         // String filename = "one.json"; // uncomment to run without wapo dataset
 
         JsonFactory f = new MappingJsonFactory();
@@ -96,14 +114,23 @@ public class Main {
                 // read one entry from json and add it to index
                 Document d = null;
                 int i = 0;
+                int total = 0;
                 for (i = 0; i < TOTAL_DOC_NO; i++) {
                     d = new Document();
-
+                    //System.out.println("Indexing doc: " + ++i);
                     // parse a document from json and store in index
                     r = ParsingOnly.readOneReport2(jp);
                     
+                    
+                    /*
+                    if(i<585037)
+                        continue;
+                    */
                     if (r == null)
                         continue;// Add fields to the document
+
+                    //if(r.id.equals("-1"))
+                    //    break;
 
                     // StringField.TYPE_STORED store the content as a single token
                     if(r.id!=null) {
@@ -124,44 +151,76 @@ public class Main {
                     	Field author = new Field("author", r.author, StringField.TYPE_STORED);
                     	d.add(author);
                     }else {
-                    	Field author = new Field("", r.author, StringField.TYPE_STORED);
+                    	Field author = new Field("author", "", StringField.TYPE_STORED);
                     	d.add(author);
+                    }
+                    
+                    // TextField.TYPE_STORED tokenize the strings
+
+                    // this for making vectors
+                    FieldType ft = new FieldType(TextField.TYPE_STORED);
+                    ft.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS);
+                    ft.setStoreTermVectors(true);
+                    ft.setStoreTermVectorOffsets(true);
+                    ft.setStoreTermVectorPositions(true);
+                    ft.setStoreTermVectorPayloads(true);
+                    ft.setStored(true);
+                    
+                    if(r.content!=null) {
+                        
+                        Field content = new Field("content", r.content,ft);
+                        //content.term
+	                    d.add(content);
+                    }else {
+                    	Field content = new Field("content", "", ft);
+                    	d.add(content);
+                    }
+                    
+                    if(r.date!=null) {
+                        Field date = new Field("date", r.date, StringField.TYPE_STORED);
+                        //date.
+                    	d.add(date);
+                    }else{
+                        Field date = new Field("date", "", StringField.TYPE_STORED);
+                        //date.
+                    	d.add(date);
+                    }
+
+                    if(r.source!=null) {
+                        Field source = new Field("source", r.source, StringField.TYPE_STORED);
+                        //Field f = new Field
+                        d.add(source);
+                    }else{
+                        Field source = new Field("source", "", StringField.TYPE_STORED);
+                        //Field f = new Field
+                        d.add(source);
                     }
 
                     
-                    if(r.content!=null) {
-	                    // TextField.TYPE_STORED tokenize the strings
-	                    Field content = new Field("content", r.content, TextField.TYPE_STORED);
-	                    d.add(content);
-                    }else
-                    	continue;
-                    
-                    if(r.date!=null) {
-                    	Field date = new Field("date", r.date, StringField.TYPE_STORED);
-                    	d.add(date);
-                    }else
-                    	continue;
-                    
-                    if(r.source!=null) {
-                    Field source = new Field("source", r.source, StringField.TYPE_STORED);
-                    d.add(source);
-                    }else
-                    	continue;
-                    
                     if(r.title!=null) {
-                    Field title = new Field("title", r.title, TextField.TYPE_STORED);
-                    d.add(title);
+                       
+                        Field title = new Field("title", r.title,ft);
+                        //Field title = new Field("title", r.title, TextField.TYPE_STORED,Field.TermVector.YES);
+                        d.add(title);
                     }else {
-                    	continue;
+                    	Field title = new Field("title","",ft);
+                        //Field title = new Field("title", r.title, TextField.TYPE_STORED,Field.TermVector.YES);
+                        d.add(title);
                     }
+
+
                     if(r.url!=null) {
-                    Field url = new Field("url", r.url, StringField.TYPE_STORED);
-                    d.add(url);
+                        Field url = new Field("url", r.url, StringField.TYPE_STORED);
+                        d.add(url);
                     }
-                    else
-                    	continue;
+                    else{
+                        Field url = new Field("url", "", StringField.TYPE_STORED);
+                        d.add(url);
+                    }
                     // add the document to index
                     iwriter.addDocument(d);
+
+                    total++;
 
                     if (i % 1000 == 0) {
                         System.out.printf("Indexed %d documents...\n", i + 1);
@@ -179,6 +238,8 @@ public class Main {
                 // writer.forceMerge(1);
 
                 iwriter.close(); // after adding docs close the indexwriter
+                System.out.printf("loop %d...\n", i );
+                System.out.printf("Total %d documents...\n", total);
 
             } catch (Exception e) {
                 System.out.println(" caught a " + e.getClass() + "\n with message: " + e.getMessage());

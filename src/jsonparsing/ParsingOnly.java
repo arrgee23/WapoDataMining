@@ -45,8 +45,16 @@ public class ParsingOnly {
 	static Report readOneReport2(JsonParser parser) {
 		ObjectMapper mapper = new ObjectMapper();
 		//JsonParser parser = mapper.getFactory().createParser(new File(...));
+		JsonToken tkn = null;
 		try {
-			if(parser.nextToken() != JsonToken.START_OBJECT) {
+			tkn = parser.nextToken();
+			if(tkn==null) // end of document
+			{
+				Report r = new Report();
+				r.setId("-1");
+				return r;
+			}
+			if(tkn != JsonToken.START_OBJECT) {
 			  throw new IllegalStateException("Expected start object");
 			}
 		} catch (IOException e) {
@@ -72,7 +80,7 @@ public class ParsingOnly {
 			// read the contents array
 			ArrayNode contentsArr = (ArrayNode)node.get("contents");
 
-			if(id.isNull() || id==null || title.isNull()|| title==null || type==null || type.isNull() || contentsArr==null || contentsArr.isNull())
+			if(id.isNull() || id==null )
 				return null;
 			else
 			{
@@ -92,7 +100,7 @@ public class ParsingOnly {
 				//System.out.println(str);
 				//System.out.println("");
 
-				if(idstr.equals("") || titlestr.equals("") || typestr.equals("") || str.equals(""))
+				if(idstr.equals("") || (titlestr.equals("") && str.equals("")))
 					return null;
 
 				Report r = new Report();
