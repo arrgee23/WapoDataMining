@@ -1,0 +1,1 @@
+javac -cp ".;/home/arrgee/Documents/*.jar" ParseDemo.java
