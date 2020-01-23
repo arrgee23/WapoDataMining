@@ -1,0 +1,10 @@
+CREATE TABLE reports (
+        id VARCHAR(100),
+        url VARCHAR(1000),
+        title VARCHAR(400),
+        author VARCHAR(200),
+        date VARCHAR(100),
+        source VARCHAR(100),
+        articleType VARCHAR(100),
+        content MEDIUMTEXT,
+        PRIMARY KEY (id));

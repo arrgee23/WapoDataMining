@@ -1,8 +1,0 @@
- 
-{ 
-  "records": [ 
-    {"field1": "aaaaa", "bbbb": "ccccc"}, 
-    {"field2": "aaa", "bbb": "ccc"} 
-  ] ,
-  "special message": "hello, world!" 
-}

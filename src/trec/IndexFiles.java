@@ -88,14 +88,24 @@ public class IndexFiles {
 					// System.out.println("Indexing doc: " + ++i);
 					// parse a document from json and store in index
 
-					r = ParsingOnly.readOneReport2(jp);
-
+					r = ParsingOnly.readOneReport3(jp);
+					
+					
+					
 					/*
 					 * if(i<585037) continue;
 					 */
 					if (r == null)
 						continue;// Add fields to the document
-
+					
+					
+					if(r.getArticleType().equals("Opinion") )//||
+						//r.getArticleType().equals("Letters to the Editor") ||	
+						//r.getArticleType().equals("The Post's View") )
+					{
+						int k=3;
+					}
+					
 					// if(r.id.equals("-1"))
 					// break;
 
@@ -218,4 +228,8 @@ public class IndexFiles {
 
 	}
 
+
+	public static void main(String[] args) {
+		createWapoIndex();
+	}
 }

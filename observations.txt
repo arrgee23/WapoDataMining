@@ -1,0 +1,47 @@
+Contents array in JSON
+
+1. type:"kicker" denotes the type of article
+we reject
+
+
+{"content": "Letters to the Editor", "mime": "text/plain", "type": "kicker"}
+
+{"type": "kicker", "storyType": "Opinion"}
+{"content": "The Post's View", "mime": "text/plain", "type": "kicker"}
+
+2. type:title
+
+3. type:byline
+
+4. type: date
+
+5. type: deck //optional "opinions" dont have
+
+6. type: image
+
+7 onwards.. sanitized_html
+
+// for opinion types.. sanitized_html(content starts from 5 onwards generally)
+
+
+-----------------------------------------------------------
+ Method 4 (htwsaar4) = title and body query+  a date filter is applied to allow only documents published on or before
+the publication date of the input document.
+ our method htwsaar4
+looses on topic 818. The document about dietary recommendations related to
+cholesterol contains many general terms, leading to a diluted query.
+
+performance: 0.4619
+
+
+-----------------------------------------------------------
+Time filtering
+We submitted runs that pruned all documents published after the query document. Documents missing a
+publication time were considered to be older than any others and were therefore included. Although this
+was not part of the final ruleset, it actually significantly improved results, at least in terms of precision!
+(umass rm achieves lower performance without time filtering: NDCG@5=3.556 vs. NCDG@5=0.4157).
+In future submissions to TREC News, we hope to explore this relationship between time and relevance
+more deeply.
+---------------------------
+BM25(k1=1.2,b=0.75)
+------------------------------

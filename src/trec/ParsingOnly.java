@@ -14,64 +14,62 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
-
 public class ParsingOnly {
-	public static final int TOTAL_DOC_NO = 595037;//608180;
+	public static final int TOTAL_DOC_NO = 595037;// 608180;
 	public static final String INDEX_PATH = "/home/arrgee/Documents/index";
-	
+
 	// generic deapth first traversal
-	public static void traverse(JsonNode root){
-    
-		if(root.isObject()){
+	public static void traverse(JsonNode root) {
+
+		if (root.isObject()) {
 			Iterator<String> fieldNames = root.fieldNames();
 			System.out.println("object");
-			while(fieldNames.hasNext()) {
+			while (fieldNames.hasNext()) {
 				String fieldName = fieldNames.next();
 				JsonNode fieldValue = root.get(fieldName);
 				traverse(fieldValue);
 			}
-		} else if(root.isArray()){
+		} else if (root.isArray()) {
 			System.out.println("array");
 			ArrayNode arrayNode = (ArrayNode) root;
-			for(int i = 0; i < arrayNode.size(); i++) {
+			for (int i = 0; i < arrayNode.size(); i++) {
 				JsonNode arrayElement = arrayNode.get(i);
 				traverse(arrayElement);
 			}
 		} else {
 			// JsonNode root represents a single value field - do something with it.
 			System.out.println(root.asText());
-			
+
 		}
 	}
-	
-	
+
 	static Report readOneReport2(JsonParser parser) {
 		ObjectMapper mapper = new ObjectMapper();
-		//JsonParser parser = mapper.getFactory().createParser(new File(...));
+		// JsonParser parser = mapper.getFactory().createParser(new File(...));
 		JsonToken tkn = null;
 		try {
 			tkn = parser.nextToken();
-			if(tkn==null) // end of document
+			if (tkn == null) // end of document
 			{
 				Report r = new Report();
 				r.setId("-1");
 				return r;
 			}
-			if(tkn != JsonToken.START_OBJECT) {
-			  throw new IllegalStateException("Expected start object");
+			if (tkn != JsonToken.START_OBJECT) {
+				throw new IllegalStateException("Expected start object");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		JsonNode node = null;  
+		JsonNode node = null;
 		try {
 			node = mapper.readTree(parser);
-			//traverse(node);
-			
-			//JsonNode n = node.get("id");
-			//System.out.println(n.textValue());
+			// traverse(node);
 
-			JsonNode id,url,title,date,source,type,author;
+			// JsonNode n = node.get("id");
+			// System.out.println(n.textValue());
+
+			JsonNode id, url, title, date, source, type, author;
 
 			id = node.get("id");
 			url = node.get("article_url");
@@ -81,29 +79,28 @@ public class ParsingOnly {
 			type = node.get("type");
 			author = node.get("author");
 			// read the contents array
-			ArrayNode contentsArr = (ArrayNode)node.get("contents");
+			ArrayNode contentsArr = (ArrayNode) node.get("contents");
 
-			if(id.isNull() || id==null )
+			if (id.isNull() || id == null)
 				return null;
-			else
-			{
-				String idstr=id.asText(),urlstr=url.asText(),titlestr=title.asText(),
-				datestr=date.asText(),authorstr=author.asText(),typestr=type.asText(),sourcestr=source.asText();
+			else {
+				String idstr = id.asText(), urlstr = url.asText(), titlestr = title.asText(), datestr = date.asText(),
+						authorstr = author.asText(), typestr = type.asText(), sourcestr = source.asText();
 
 				String str = "";
-				
-				for(int i=5;i<contentsArr.size();i++){
-					JsonNode elem = contentsArr.get(i);
-					if(elem!=null){
-						JsonNode n = elem.get("content");
-						if(n!=null)
-							str+=n.textValue();
-						}
-				}
-				//System.out.println(str);
-				//System.out.println("");
 
-				if(idstr.equals("") || (titlestr.equals("") && str.equals("")))
+				for (int i = 5; i < contentsArr.size(); i++) {
+					JsonNode elem = contentsArr.get(i);
+					if (elem != null) {
+						JsonNode n = elem.get("content");
+						if (n != null)
+							str += n.textValue();
+					}
+				}
+				// System.out.println(str);
+				// System.out.println("");
+
+				if (idstr.equals("") || (titlestr.equals("") && str.equals("")))
 					return null;
 
 				Report r = new Report();
@@ -121,11 +118,8 @@ public class ParsingOnly {
 
 			}
 
+			// System.out.println(node.get("contents").textValue());
 
-			
-			//System.out.println(node.get("contents").textValue());
-			
-				
 		} catch (JsonProcessingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -134,17 +128,130 @@ public class ParsingOnly {
 			e.printStackTrace();
 		}
 
-		  // do whatever you need to do with this object
-		//}
+		// do whatever you need to do with this object
+		// }
 
-		//parser.close();
-		  return null;
+		// parser.close();
+		return null;
 	}
-	static Report readOneReport(JsonParser jp) //throws Exception {
+
+	// read kicker
+	static Report readOneReport3(JsonParser parser) {
+		ObjectMapper mapper = new ObjectMapper();
+		// JsonParser parser = mapper.getFactory().createParser(new File(...));
+		JsonToken tkn = null;
+		try {
+			tkn = parser.nextToken();
+			if (tkn == null) // end of document
+			{
+				Report r = new Report();
+				r.setId("-1");
+				return r;
+			}
+			if (tkn != JsonToken.START_OBJECT) {
+				throw new IllegalStateException("Expected start object");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		JsonNode node = null;
+		try {
+			node = mapper.readTree(parser);
+			// traverse(node);
+
+			// JsonNode n = node.get("id");
+			// System.out.println(n.textValue());
+
+			JsonNode id, url, title, date, source, type, author;
+
+			id = node.get("id");
+			url = node.get("article_url");
+			title = node.get("title");
+			date = node.get("published_date");
+			source = node.get("source");
+			type = node.get("type");
+			author = node.get("author");
+			// read the contents array
+			ArrayNode contentsArr = (ArrayNode) node.get("contents");
+
+			if (id.isNull() || id == null)
+				return null;
+			else {
+				String idstr = id.asText(), urlstr = url.asText(), titlestr = title.asText(), datestr = date.asText(),
+						authorstr = author.asText(), typestr = type.asText(), sourcestr = source.asText();
+
+				String str = "";
+
+				for (int i = 0; i < contentsArr.size(); i++) {
+					JsonNode elem = contentsArr.get(i);
+
+					if (elem != null) {
+						if (elem.get("type") != null) {
+
+							// kicker contatins article type
+							if (elem.get("type").textValue().equals("kicker")) {
+
+								JsonNode storyType = elem.get("storyType");
+								if (storyType == null) {
+									JsonNode n = elem.get("content");
+									if (n != null)
+										typestr = n.textValue();
+
+								} else {
+									typestr = storyType.textValue();
+								}
+							}
+							if (elem.get("type").textValue().equals("sanitized_html")) {
+								JsonNode n = elem.get("content");
+								if (n != null)
+									str += n.textValue();
+							}
+						}
+					}
+				}
+				// System.out.println(str);
+				// System.out.println("");
+
+				if (idstr.equals("") || (titlestr.equals("") && str.equals("")))
+					return null;
+
+				Report r = new Report();
+
+				r.setArticleType(typestr);
+				r.setAuthor(authorstr);
+				r.setContent(str);
+				r.setDate(datestr);
+				r.setId(idstr);
+				r.setSource(sourcestr);
+				r.setTitle(titlestr);
+				r.setUrl(urlstr);
+
+				return r;
+
+			}
+
+			// System.out.println(node.get("contents").textValue());
+
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// do whatever you need to do with this object
+		// }
+
+		// parser.close();
+		return null;
+	}
+
+	static Report readOneReport(JsonParser jp) // throws Exception {
 	{
 		Report r = new Report();
 
-		JsonToken current=null;
+		JsonToken current = null;
 		try {
 			current = jp.nextToken();
 		} catch (IOException e) {
@@ -164,8 +271,7 @@ public class ParsingOnly {
 
 		try {
 			JsonToken temp = jp.nextToken();
-			while (temp != JsonToken.END_OBJECT && temp!=null)
-			{//&& jp.nextToken() != null) {
+			while (temp != JsonToken.END_OBJECT && temp != null) {// && jp.nextToken() != null) {
 				String fieldname = jp.getCurrentName();
 				// String id=null,url=null,title=null,author=null,date = null;
 				if ("id".equals(fieldname)) {
@@ -253,7 +359,7 @@ public class ParsingOnly {
 		}
 
 		Report r = null;
-		int i=0;
+		int i = 0;
 		long missingCount = 0;
 		long count = 0;
 
@@ -262,17 +368,16 @@ public class ParsingOnly {
 			// parse a document from json and store in index
 			r = readOneReport2(jp);
 
-			System.out.print(i+1);
-			if(r!=null){
-				System.out.println(" "+r.id);
+			System.out.print(i + 1);
+			if (r != null) {
+				System.out.println(" " + r.id);
 				count++;
-			}
-			else{
+			} else {
 				System.out.println();
 				missingCount++;
 			}
 		}
-		System.out.println(count+"   "+missingCount);
+		System.out.println(count + "   " + missingCount);
 
 	}
 }
