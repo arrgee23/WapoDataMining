@@ -45,3 +45,9 @@ more deeply.
 ---------------------------
 BM25(k1=1.2,b=0.75)
 ------------------------------
+boosted tfidf
+ndcg_cut_5              all     0.3420
+top terms from title and content
+date filter
+dont show duplicate docs
+---------------------------------

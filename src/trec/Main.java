@@ -76,18 +76,22 @@ public class Main {
         for(Topic t : queryIdList) {
         	// search for the doc with id to get query document
         	//System.out.println(t.docid);
-        	Report r = LuceneQuery.getReportWithID(t.docid, isearcher);
+        	Integer id = new Integer(0);
+        	Report r = LuceneQuery.getReportWithID(t.docid, isearcher,id);
+        	
         	System.out.println(++cnt+". Executing report: "+r.getId());
         	// for each topic retrieve 100 documents
-        	List<Tuple> answers = LuceneQuery.getResultsBaseline(r, isearcher);
+        	List<Tuple> answers = LuceneQuery.getResultsMoreLikeThis(r, isearcher,ireader);
         	
         	
         	
         	int count = 0;
+        	System.out.println("Returned: "+answers.size());
         	for(Tuple answer : answers) {
         		if(answer!=null) {
 	        		//System.out.printf("%d Q0 %s %d %.1f %s\n",extractTopicNo(t),answer.docId,count,answer.score,answer.codename);
 	        		output.printf("%d Q0 %s %d %f %s\n",extractTopicNo(t),answer.docId,count+1,answer.score,answer.codename);
+	        		output.flush();
 	        		count++;
         		}
         	}

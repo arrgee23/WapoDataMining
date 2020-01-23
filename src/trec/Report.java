@@ -27,6 +27,7 @@ public class Report{
     String source;
     String articleType;
     String content;
+    public int index;
 	public String getId() {
 		return id;
 	}

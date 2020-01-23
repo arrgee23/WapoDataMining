@@ -18,18 +18,19 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.queries.mlt.MoreLikeThis;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 class LuceneQuery {
 
-	public static Report getReportWithID(String id, IndexSearcher isearcher) {
+	public static Report getReportWithID(String id, IndexSearcher isearcher,Integer index) {
 
 		// Parse a simple query that searches for "text":
 		Analyzer analyzer = new WhitespaceAnalyzer(); // ..standard english word tokenization
@@ -67,6 +68,8 @@ class LuceneQuery {
 		Report r = new Report(hitDoc.get("id"), hitDoc.get("url"), hitDoc.get("title"), hitDoc.get("author"),
 				hitDoc.get("date"), hitDoc.get("source"), hitDoc.get("articleType"), hitDoc.get("content"));
 		// System.out.println(hitDoc.get("content"));
+		
+		r.index = hits[0].doc;
 		return r;
 	}
 
@@ -157,14 +160,8 @@ class LuceneQuery {
 	
 	public static int flag = 0;
 	
-	public static List<Tuple> getResultsBaseline(Report r, IndexSearcher isearcher) {
-		Analyzer analyzer = new EnglishAnalyzer(); // ..standard english word tokenization
-		
-		// search in the content field of all articles
-		QueryParser parser = new QueryParser("content", analyzer);
-
-		Query query = null;
-		
+	// query concatenating title and content
+	public static String makeTitleContentQuery(Report r, IndexSearcher isearcher, int noTerms) {
 		// make a query concatenating title and content
 		List<String> st = returnStringTokens(r.title);
 		List<String> sl = returnStringTokens(r.content);
@@ -173,16 +170,16 @@ class LuceneQuery {
 		int count = 0;
 
 		for (String s : st) {
-			if (count >= 1000)
+			if (count >= noTerms)
 				break;
 			sb.append(s);
 			sb.append(" ");
 
 			count++;
 		}
-		
+
 		for (String s : sl) {
-			if (count >= 1000)
+			if (count >= noTerms)
 				break;
 			sb.append(s);
 			sb.append(" ");
@@ -190,9 +187,20 @@ class LuceneQuery {
 			count++;
 		}
 
+		return sb.toString();
+	}
+	
+	public static List<Tuple> getResultsBaseline(Report r, IndexSearcher isearcher,IndexReader ireader) {
+		Analyzer analyzer = new EnglishAnalyzer(); // ..standard english word tokenization
+		
+		// search in the content field of all articles
+		QueryParser parser = new QueryParser("content", analyzer);
 
+		Query query = null;
+		
+		String queryStr = makeTitleContentQuery(r,isearcher,1000);
 		try {
-			query = parser.parse(sb.toString());
+			query = parser.parse(queryStr);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -202,6 +210,7 @@ class LuceneQuery {
 		ScoreDoc[] hits = null;
 		try {
 			hits = isearcher.search(query, 10000).scoreDocs;
+			//isearcher.search(query,10000).
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -261,6 +270,142 @@ class LuceneQuery {
 //								&& resultDate.getMonth()==queryDate.getMonth() 
 //								&& resultDate.getYear()==queryDate.getYear()
 //						)
+				)
+				{
+					String type = isearcher.doc(hits[i].doc).get("articleType");
+					if(type!=null) {
+						// ignore articles with this type as specified
+						if(type.equals("Opinion") || type.equals("Opinios") ||
+								type.equals("Letters to the Editor") || type.equals("The Post's View")) {
+							continue;
+						}
+							
+					}
+					answers.add(new Tuple(id, score, codename));
+					added++;
+				}
+			}
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return answers;
+
+	}
+
+	
+	
+	
+	public static List<Tuple> getResultsMoreLikeThis(Report r, IndexSearcher isearcher,IndexReader ireader)  {
+		MoreLikeThis mlt = new MoreLikeThis(ireader);
+		mlt.setAnalyzer(new EnglishAnalyzer());
+		mlt.setMaxQueryTerms(1000);
+		mlt.setBoost(true);
+		String[] sarr = {"title","content"};
+		mlt.setFieldNames(sarr);
+		//System.out.println(mlt.describeParams());
+		 //Reader target = ireader;//... // orig source of doc you want to find similarities to
+		 
+		Integer lucene_id = new Integer(0);
+		Report rp = LuceneQuery.getReportWithID(r.id, isearcher,lucene_id);
+		
+		lucene_id = r.index;
+		System.out.println(lucene_id);
+		Query query = null;
+		if(lucene_id!=0) {
+			try {
+				
+				query = mlt.like(lucene_id);
+				
+				//System.out.println("okay");
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		else
+			assert(false);
+		 
+		 //Hits hits = is.search(query);
+		 // now the usual iteration thru 'hits' - the only thing to watch for is to make sure
+		 //you ignore the doc if it matches your 'target' document, as it should be similar to itself
+		 
+		// parse through the returned documents
+		ScoreDoc[] hits = null;
+		try {
+			TopDocs td = isearcher.search(query, 1000);
+			
+			hits = td.scoreDocs;
+			
+			//isearcher.search(query,10000).
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		// assertEquals(1, hits.length);
+
+		if (hits.length < 1) {
+			System.out.println("Your query did not return any result...");
+			assert (false);
+		}
+
+		LinkedList<Tuple> answers = new LinkedList<Tuple>();
+		try {
+			int added = 0;
+			for (int i = 0; i < hits.length; i++) {
+				
+				if (added >= 100)
+					break;
+
+				String id = isearcher.doc(hits[i].doc).get("id");
+				if(id.equals(r.getId())) // document most similar with itself
+					continue;
+				
+				// look in the previous documents with same title
+				String currTitle = isearcher.doc(hits[i].doc).get("title");
+				boolean alreadyAdded = false;
+				for(int j=i-1;j>=0;j--) {
+					String prevTitle = isearcher.doc(hits[j].doc).get("title");
+					if(prevTitle.equals(currTitle))
+					{
+						alreadyAdded = true;
+						break;
+					}
+				}
+				if(alreadyAdded)
+					continue;
+				String dateStr = isearcher.doc(hits[i].doc).get("date");
+				
+				
+
+				@SuppressWarnings("deprecation")
+				// Date resultReportDate = new Date(dateStr);
+				// Date queryReportDate = new Date(r.date);
+				Date resultDate = null;
+				Date queryDate = null;
+				
+				// convert string to date when filterinng to classes
+				// TODO add Date field in report class
+				if (dateStr != null && r.date != null && !dateStr.equals("null") && !r.date.equals("null")) {
+					Instant result_instant = Instant.ofEpochSecond( Long.parseLong(dateStr));
+					Instant query_instant = Instant.ofEpochSecond( Long.parseLong(r.date) );
+					
+					
+					resultDate = Date.from( result_instant );
+					//resultDate = Long.parseLong(dateStr);
+					queryDate = Date.from( query_instant );
+				}
+				double score = hits[i].score;
+				String codename = "onlytitle";
+				
+				// allow only articles published on or before
+				if(	
+						resultDate.before(queryDate) || 
+						(
+								resultDate.getDay()==queryDate.getDay() 
+								&& resultDate.getMonth()==queryDate.getMonth() 
+								&& resultDate.getYear()==queryDate.getYear()
+						)
 				)
 				{
 					String type = isearcher.doc(hits[i].doc).get("articleType");
