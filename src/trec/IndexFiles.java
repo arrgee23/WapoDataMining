@@ -61,6 +61,7 @@ public class IndexFiles {
 
 				// Analyzer analyzer = new StandardAnalyzer();
 				IndexWriterConfig config = new IndexWriterConfig(analyzer);
+				//System.out.println(config.getSimilarity().toString());
 				if (!append) {
 					// Create a new index in the directory, removing any
 					// previously indexed documents:
@@ -90,21 +91,8 @@ public class IndexFiles {
 
 					r = ParsingOnly.readOneReport3(jp);
 					
-					
-					
-					/*
-					 * if(i<585037) continue;
-					 */
 					if (r == null)
 						continue;// Add fields to the document
-					
-					
-					if(r.getArticleType().equals("Opinion") )//||
-						//r.getArticleType().equals("Letters to the Editor") ||	
-						//r.getArticleType().equals("The Post's View") )
-					{
-						int k=3;
-					}
 					
 					// if(r.id.equals("-1"))
 					// break;

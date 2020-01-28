@@ -19,12 +19,20 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.mlt.MoreLikeThis;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.BooleanQuery.Builder;
+import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.similarities.BM25Similarity;
+import org.apache.lucene.search.similarities.TFIDFSimilarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
@@ -298,27 +306,67 @@ class LuceneQuery {
 	
 	
 	public static List<Tuple> getResultsMoreLikeThis(Report r, IndexSearcher isearcher,IndexReader ireader)  {
+		// generating query for top content terms
 		MoreLikeThis mlt = new MoreLikeThis(ireader);
 		mlt.setAnalyzer(new EnglishAnalyzer());
-		mlt.setMaxQueryTerms(1000);
+		mlt.setMaxQueryTerms(Constants.CONTENT_QUERY_LENGTH);
 		mlt.setBoost(true);
-		String[] sarr = {"title","content"};
+		String[] sarr = {"content"};
 		mlt.setFieldNames(sarr);
-		//System.out.println(mlt.describeParams());
+		
+		// generating query for top title terms
+		MoreLikeThis mlt2 = new MoreLikeThis(ireader);
+		mlt2.setAnalyzer(new EnglishAnalyzer());
+		mlt2.setMinDocFreq(0);
+		mlt2.setMinTermFreq(0);
+		mlt2.setMaxQueryTerms(Constants.TITLE_QUERY_LENGTH);
+		mlt2.setBoost(true);
+		String[] sarr2 = {"title"};
+		mlt2.setFieldNames(sarr2);
+		
+		//mlt.setSimilarity( );
+		//System.out.println(mlt.getSimilarity().toString());
+		//tfIdf.
+		//mlt.
+		//System.out.println(mlt.describeParams()+"\nBoostFactor: "+mlt.getBoostFactor());
+		
 		 //Reader target = ireader;//... // orig source of doc you want to find similarities to
 		 
 		Integer lucene_id = new Integer(0);
 		Report rp = LuceneQuery.getReportWithID(r.id, isearcher,lucene_id);
 		
 		lucene_id = r.index;
-		System.out.println(lucene_id);
+		System.out.println("Searching for index id: "+lucene_id);
+		
 		Query query = null;
+		Query contentQuery = null;
+		Query titleQuery = null;
+		
 		if(lucene_id!=0) {
 			try {
 				
-				query = mlt.like(lucene_id);
+				// best tfidf scores with boost from content
+				contentQuery =  mlt.like(lucene_id);
+				titleQuery = mlt2.like(lucene_id);
 				
-				//System.out.println("okay");
+				Builder queryBuilder = new BooleanQuery.Builder()
+					     .add(contentQuery, Occur.SHOULD);
+				queryBuilder.add(titleQuery,Occur.SHOULD);
+				
+				
+				
+				  List<String> st = returnStringTokens(r.title);
+				  
+				  // add strings in title to query 
+				  for (String s : st) 
+				  {
+					  queryBuilder.add(new
+					  TermQuery(new Term("content", s)), Occur.SHOULD); 
+				  }
+				  //queryBuilder.add(new TermQuery(new Term("author", r.author)), Occur.SHOULD); 
+				query = queryBuilder.build();
+				System.out.println(query.toString());
+				
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -348,6 +396,12 @@ class LuceneQuery {
 			System.out.println("Your query did not return any result...");
 			assert (false);
 		}
+		/*
+		 * try { Explanation e = isearcher.explain(query,hits[2].doc);
+		 * System.out.println(e.getDescription()); for(Explanation e1:e.getDetails()) {
+		 * //System.out.println(e1.getDescription()+" "+e1.getValue()); } } catch
+		 * (IOException e1) { // TODO Auto-generated catch block e1.printStackTrace(); }
+		 */
 
 		LinkedList<Tuple> answers = new LinkedList<Tuple>();
 		try {
@@ -399,7 +453,7 @@ class LuceneQuery {
 				String codename = "onlytitle";
 				
 				// allow only articles published on or before
-				if(	
+				if(
 						resultDate.before(queryDate) || 
 						(
 								resultDate.getDay()==queryDate.getDay() 
@@ -411,12 +465,13 @@ class LuceneQuery {
 					String type = isearcher.doc(hits[i].doc).get("articleType");
 					if(type!=null) {
 						// ignore articles with this type as specified
-						if(type.equals("Opinion") || type.equals("Opinios") ||
+						if(type.equals("Opinion") || type.equals("Opinions") ||
 								type.equals("Letters to the Editor") || type.equals("The Post's View")) {
 							continue;
 						}
 							
 					}
+					//System.out.println(added+": "+hits[i].doc+" "+id);
 					answers.add(new Tuple(id, score, codename));
 					added++;
 				}
@@ -463,6 +518,7 @@ class LuceneQuery {
 			}
 
 		}
+
 		return result;
 	}
 

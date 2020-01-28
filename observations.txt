@@ -48,6 +48,218 @@ BM25(k1=1.2,b=0.75)
 boosted tfidf
 ndcg_cut_5              all     0.3420
 top terms from title and content
-date filter
+
 dont show duplicate docs
 ---------------------------------
+boosted tfidf
+ndcg_cut_5              all     0.3855
+top terms from title and content (1000)
+boosted
+dont show duplicate docs
+------------------------------------
+
+
+ndcg_cut_5              all     0.3802
+ndcg_cut_10             all     0.3848
+ndcg_cut_15             all     0.3945
+ndcg_cut_20             all     0.3964
+ndcg_cut_30             all     0.3977
+ndcg_cut_100            all     0.4408
+ndcg_cut_200            all     0.4360
+ndcg_cut_500            all     0.4347
+ndcg_cut_1000           all     0.4347
+
+boosted tfidf
+top terms from content (25)
+boosted
+dont show duplicate docs
+DateFilter
+----------------------------------------------
+
+ndcg_cut_5              all     0.3345
+ndcg_cut_10             all     0.3685
+ndcg_cut_15             all     0.3784
+ndcg_cut_20             all     0.3884
+ndcg_cut_30             all     0.4010
+ndcg_cut_100            all     0.4584
+ndcg_cut_200            all     0.4537
+ndcg_cut_500            all     0.4525
+ndcg_cut_1000           all     0.4525
+
+boosted tfidf
+top terms from content (30)
+boosted
+dont show duplicate docs
+no date filter
+---------------------------------------------
+ndcg_cut_5              all     0.3978
+ndcg_cut_10             all     0.4015
+ndcg_cut_15             all     0.4073
+ndcg_cut_20             all     0.4099
+ndcg_cut_30             all     0.4193
+ndcg_cut_100            all     0.4593
+ndcg_cut_200            all     0.4545
+ndcg_cut_500            all     0.4532
+ndcg_cut_1000           all     0.4532
+
+boosted tfidf
+top terms from content (30) -- search only in content part
+top terms from title(30) -- search only in title part
+boosted
+dont show duplicate docs
+no date filter
+-------------------------------------------------
+mlt-title-content.txt
+ndcg_cut_5              all     0.3997
+ndcg_cut_10             all     0.4085
+ndcg_cut_15             all     0.4140
+ndcg_cut_20             all     0.4205
+ndcg_cut_30             all     0.4265
+ndcg_cut_100            all     0.4679
+ndcg_cut_200            all     0.4631
+ndcg_cut_500            all     0.4618
+ndcg_cut_1000           all     0.4618
+
+same as prev plus terms from title are searched also in content
+----------------------
+res2020-01-24_22-22-08.txt
+ndcg_cut_5              all     0.3955
+ndcg_cut_10             all     0.4068
+ndcg_cut_15             all     0.4126
+ndcg_cut_20             all     0.4176
+ndcg_cut_30             all     0.4249
+ndcg_cut_100            all     0.4662
+ndcg_cut_200            all     0.4614
+ndcg_cut_500            all     0.4601
+ndcg_cut_1000           all     0.4601
+
+author match condition added
+----------------------------------
+res2020-01-24_22-42-56.txt
+ndcg_cut_5              all     0.3975
+ndcg_cut_10             all     0.4081
+ndcg_cut_15             all     0.4146
+ndcg_cut_20             all     0.4198
+ndcg_cut_30             all     0.4239
+ndcg_cut_100            all     0.4621
+ndcg_cut_200            all     0.4574
+ndcg_cut_500            all     0.4561
+ndcg_cut_1000           all     0.4561
+
+300  title words
+700 text words
+-----------------------------------
+mlt_allfilter_50content_30title.txt
+same 50 content 30 title
+ndcg_cut_5              all     0.4060
+ndcg_cut_10             all     0.4095
+ndcg_cut_15             all     0.4181
+ndcg_cut_20             all     0.4236
+ndcg_cut_30             all     0.4297
+ndcg_cut_100            all     0.4682
+ndcg_cut_200            all     0.4634
+ndcg_cut_500            all     0.4621
+ndcg_cut_1000           all     0.4621
+------------------------------------------
+mlt_allfilter_title30_content100
+ndcg_cut_5              all     0.3961
+ndcg_cut_10             all     0.4073
+ndcg_cut_15             all     0.4148
+ndcg_cut_20             all     0.4184
+ndcg_cut_30             all     0.4243
+ndcg_cut_100            all     0.4617
+ndcg_cut_200            all     0.4569
+ndcg_cut_500            all     0.4557
+ndcg_cut_1000           all     0.4557
+
+---------------------------------------
+mlt_content30_title10_allfilter.txt
+ndcg_cut_5              all     0.4060
+ndcg_cut_10             all     0.4095
+ndcg_cut_15             all     0.4181
+ndcg_cut_20             all     0.4236
+ndcg_cut_30             all     0.4297
+ndcg_cut_100            all     0.4682
+ndcg_cut_200            all     0.4634
+ndcg_cut_500            all     0.4621
+ndcg_cut_1000           all     0.4621
+---------------------------------------
+mlt_allfilter_content20_title10
+ndcg_cut_5              all     0.4031
+ndcg_cut_10             all     0.4134
+ndcg_cut_15             all     0.4090
+ndcg_cut_20             all     0.4179
+ndcg_cut_30             all     0.4234
+ndcg_cut_100            all     0.4643
+ndcg_cut_200            all     0.4595
+ndcg_cut_500            all     0.4582
+ndcg_cut_1000           all     0.4582
+-----------------------------------------
+contetnt 40 title 10
+ndcg_cut_5              all     0.4004
+ndcg_cut_10             all     0.4099
+ndcg_cut_15             all     0.4140
+ndcg_cut_20             all     0.4188
+ndcg_cut_30             all     0.4263
+ndcg_cut_100            all     0.4679
+ndcg_cut_200            all     0.4631
+ndcg_cut_500            all     0.4618
+ndcg_cut_1000           all     0.4618
+-------------------------------------------
+content 30 title 20
+ndcg_cut_5              all     0.3997
+ndcg_cut_10             all     0.4085
+ndcg_cut_15             all     0.4140
+ndcg_cut_20             all     0.4205
+ndcg_cut_30             all     0.4265
+ndcg_cut_100            all     0.4679
+ndcg_cut_200            all     0.4631
+ndcg_cut_500            all     0.4618
+ndcg_cut_1000           all     0.4618
+-------------------------------------------
+content 30 title 5
+ndcg_cut_5              all     0.3970
+ndcg_cut_10             all     0.4107
+ndcg_cut_15             all     0.4113
+ndcg_cut_20             all     0.4136
+ndcg_cut_30             all     0.4218
+ndcg_cut_100            all     0.4626
+ndcg_cut_200            all     0.4579
+ndcg_cut_500            all     0.4567
+ndcg_cut_1000           all     0.4567
+--------------
+// result 0 in 
+423034
+bd1e6cc8d7525fec36a717be45638bf4
+
+title: Alan Gross returns to the United States, is greeted by an image of Che Guevara
+
+content:
+Alan Gross, the U.S. contractor released Wednesday after five years of captivity in Cuba, 
+was greeted with a, well, surprising art choice while preparing to make a statement on U.S. 
+soil this afternoon.Visible in the background of a widely circulated photograph of Gross, 
+his lawyer Scott Gilbert and spokesperson Jill Zuckman: An image of Che Guevara, 
+the divisive revolutionary figure.“Why is there a Che Guevara pic in background?” 
+National Review Online’s Andrew Johnson tweeted.Others responded with 
+sympathy: “Poor guy gets to his lawyer’s office and has to look at yet another Che glamour shot,
+” Andrew Grossman tweeted.Zuckman told The Post via e-mail that the photograph was
+ taken at the Gilbert LLP law firm.The print, from a distance, 
+ appears to be the same image that’s often emblazoned on T-shirts, posters and other memorabilia. 
+ That iconic image is based on a photograph by Alberto “Korda” Diaz Gutierrez; 
+ we have more on the history of the image here.Guevara was a leader in the Castro brothers’ 
+ revolution to overthrow the Batista dictatorship in Cuba and replace it with a communist government.
+  As the Huffington Post noted: “Cuban-Americans generally revile him for his role in 
+  establishing the island’s Communist dictatorship.”In his remarks, Gross made it clear 
+  that he did not blame the Cuban people for his imprisonment:“In no way are they responsible for 
+  the ordeal to which my family and I have been subjected,” Gross said. “To me, Cubanos — or at least,
+   most of them — are incredibly kind, generous and 
+talented. It pains me to see them treated so unjustly as a consequence of two governments’ 
+mutually belligerent policies.”
+
+
+-----------------------------------------------------------------------------------------------------
+params vs NDCG
+content title score
+30	100	0.3997
+30  10  0.40
+30	50  0.3997

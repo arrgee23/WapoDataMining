@@ -24,4 +24,8 @@ public class Constants {
     public static final String DB_USER = "root";
     public static final String DB_PASSWORD = "root";
     
+    
+    public static final int CONTENT_QUERY_LENGTH = 30;
+    public static final int TITLE_QUERY_LENGTH = 100;
+    
 }
