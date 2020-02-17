@@ -6,61 +6,20 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/arrgee/Documents/jackson-databind-2.10.1.jar">
-		<attributes>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/home/arrgee/Documents/jackson-core-2.10.1.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="https://fasterxml.github.io/jackson-core/javadoc/2.5/"/>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/home/arrgee/Documents/jackson-annotations-2.10.1.jar">
-		<attributes>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/home/arrgee/Documents/jsoup-1.12.1.jar">
-		<attributes>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/home/arrgee/Downloads/lucene-8.3.1/queryparser/lucene-queryparser-8.3.1.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="https://lucene.apache.org/core/8_0_0/queryparser/"/>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/arrgee/Documents/jdom-2.0.6/jdom-2.0.6.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:/home/arrgee/Documents/jdom-2.0.6/jdom-2.0.6-javadoc.jar!/"/>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/home/arrgee/Downloads/lucene-8.3.1/queries/lucene-queries-8.3.1.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="https://lucene.apache.org/core/8_0_0/queries/"/>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/home/arrgee/Downloads/lucene-8.3.1/core/lucene-core-8.3.1.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="https://lucene.apache.org/core/8_0_0/core/"/>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/home/arrgee/Downloads/lucene-8.3.1/analysis/common/lucene-analyzers-common-8.3.1.jar">
-		<attributes>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/usr/share/java/mysql-connector-java.jar"/>
+	<classpathentry kind="lib" path="/home/i3/git/WapoDataMining/lib/jackson-annotations-2.10.1.jar"/>
+	<classpathentry kind="lib" path="/home/i3/git/WapoDataMining/lib/jackson-core-2.10.1.jar"/>
+	<classpathentry kind="lib" path="/home/i3/git/WapoDataMining/lib/jackson-databind-2.10.1.jar"/>
+	<classpathentry kind="lib" path="/home/i3/git/WapoDataMining/lib/jsoup-1.12.1.jar"/>
+	<classpathentry kind="lib" path="/home/i3/git/WapoDataMining/lib/lucene-8.3.1/core/lucene-core-8.3.1.jar"/>
+	<classpathentry kind="lib" path="/home/i3/git/WapoDataMining/lib/lucene-8.3.1/queries/lucene-queries-8.3.1.jar"/>
+	<classpathentry kind="lib" path="/home/i3/git/WapoDataMining/lib/lucene-8.3.1/queryparser/lucene-queryparser-8.3.1.jar"/>
+	<classpathentry kind="lib" path="/home/i3/git/WapoDataMining/lib/lucene-8.3.1/analysis/common/lucene-analyzers-common-8.3.1.jar"/>
+	<classpathentry kind="lib" path="/home/i3/git/WapoDataMining/lib/jdom-2.0.6/jdom-2.0.6.jar"/>
+	<classpathentry kind="lib" path="/home/i3/git/WapoDataMining/lib/mysql-connector-java-5.1.48.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

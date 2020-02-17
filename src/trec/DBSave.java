@@ -43,7 +43,7 @@ public class DBSave {
 			JsonFactory f = new MappingJsonFactory();
 			JsonParser jp = null;
 			try {
-				File fl = new File(Constants.FILE_NAME);
+				File fl = new File(Constants.FILE_NAME2);
 				jp = f.createJsonParser(fl);
 			} catch (JsonParseException e1) {
 				e1.printStackTrace();
@@ -51,13 +51,14 @@ public class DBSave {
 				e1.printStackTrace();
 			}
 			
-			Clob c = new SerialClob(new char[170000]);
+			//Clob c = new SerialClob(new char[170000]);
 			preparedStatement = connect
-					.prepareStatement("insert into  wapo.reports values (?, ?, ?, ?, ? , ?, ?, ?)");
+					.prepareStatement("insert into  wapo.reports values (?, ?, ?, ?, ? , ?, ?, ?) ON DUPLICATE KEY UPDATE url = 'duplicate'");
 			int indexCount = 0;
+			int indexCountBkup = indexCount;
 			for (int i = 0; i < Constants.TOTAL_DOC_NO; i++) {
 
-				r = ParsingOnly.readOneReport2(jp);
+				r = ParsingOnly.readOneReport3(jp);
 
 				
 				
@@ -66,37 +67,45 @@ public class DBSave {
 				// PreparedStatements can use variables and are more efficient
 				
 				indexCount++;
-				//if(indexCount<=45001) continue;
+				/*
+				 * if(indexCount<=194074) continue;
+				 * 
+				 * try { c.setString(1, r.content); } catch(Exception e) {
+				 * System.out.println(i); System.out.println(r.content.length()); }
+				 */
+				r.id = r.id.substring(0,Math.min(r.id.length(), 100-1));//.replace("\'", "").replace("\"", "");
+				r.url=r.url.substring(0,Math.min(r.url.length(), 100-1));
+				r.title = r.title.substring(0,Math.min(r.title.length(), 8000-1));
+				r.author = r.author.substring(0,Math.min(r.author.length(), 200-1));
+				r.date = r.date.substring(0,Math.min(r.date.length(), 100-1));
+				r.source=r.source.substring(0,Math.min(r.source.length(), 100-1));
+				r.articleType = r.articleType.substring(0,Math.min(r.articleType.length(), 100-1));
+				r.content = r.content.substring(0,Math.min(r.content.length(), 8000-1));
 				
-				try {
-				c.setString(1, r.content);
-				}
-				catch(Exception e) {
-					System.out.println(i);
-					System.out.println(r.content.length());
-				}
 				preparedStatement.setString(1, r.id);
 				preparedStatement.setString(2, r.url);
 	            preparedStatement.setString(3, r.title);
 	            preparedStatement.setString(4, r.author);
 	            preparedStatement.setString(5, r.date);
 	            preparedStatement.setString(6, r.source);
-	            preparedStatement.setString(7, r.articleType);
-	            //preparedStatement.setString(8, r.content.substring(0,Math.min(r.content.length(), 50000)));
-	            preparedStatement.setClob(8,c);
+	            preparedStatement.setString(7,r.articleType );
+	            preparedStatement.setString(8, r.content);
+	            //preparedStatement.setClob(8,c);
 	            preparedStatement.addBatch();
 
-	            if((i%5000) == 0) {
+	            if((indexCount%5000) == 0) {
 	            	preparedStatement.executeBatch();
-	            	System.out.printf("Indexed %d documents\n",i+1);
+	            	System.out.printf("Indexed %d documents\n",indexCount);
+	            	indexCountBkup = indexCount;
 	            	
 	            }
-	            if(i==Constants.TOTAL_DOC_NO-1) {
-	            	preparedStatement.executeBatch();
-	            	System.out.printf("Indexed %d documents\n",i+1);
-	            }
+	            
 			}
-
+			// one last batch add
+			if(indexCount>indexCountBkup) {
+            	preparedStatement.executeBatch();
+            	System.out.printf("Indexed %d documents\n",indexCount);
+            }
 			System.out.println("It works !");
 
 			connect.close();

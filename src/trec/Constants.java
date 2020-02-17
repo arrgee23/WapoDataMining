@@ -9,6 +9,9 @@ public class Constants {
     public static final String TOPIC_XML_SOURCE = "resources/topics.xml";
     public static final String OUTFILE_NAME = "results/res";
     
+    public static final String FILE_NAME2 = "/media/i3/015d14d9-4f60-41b6-84af-5a23508580fb/home/arrgee/Documents/WashingtonPost.v2/data/TREC_Washington_Post_collection.v2.jl";
+    
+    
     public static final String FILE_NAME = "wapo";
     
  // The JDBC Connector Class.
@@ -19,7 +22,7 @@ public class Constants {
     // by adding (say) ?user=paulr&password=paulr. Not recommended!
 
     public static final String CONNECTION =
-                            "jdbc:mysql://127.0.0.1/wapo?&rewriteBatchedStatements=true";
+                            "jdbc:mysql://127.0.0.1/wapo?&rewriteBatchedStatements=true&jdbcCompliantTruncation=false";
     
     public static final String DB_USER = "root";
     public static final String DB_PASSWORD = "root";
