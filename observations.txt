@@ -263,3 +263,21 @@ content title score
 30	100	0.3997
 30  10  0.40
 30	50  0.3997
+------------------------------------------------------------
+./trec_eval ../bqrels.exp-gains.txt ../results/mlt_allfilter_content40_title10.txt -m ndcg_cut -q
+-------------------------------------------------------------
+40 content 10 title works best in 
+
+ndcg_cut_5              all     0.4004
+ndcg_cut_5              825     1.0000
+ndcg_cut_5              821     0.0740
+ndcg_cut_5              817     0.0000
+ndcg_cut_5              814     0.7259
+ndcg_cut_5              805     0.7814
+ndcg_cut_5              442     0.0891
+ndcg_cut_5              439     0.0000
+ndcg_cut_5              422     0.0000
+ndcg_cut_5              414     0.1375
+ndcg_cut_5              400     0.5560
+
+
