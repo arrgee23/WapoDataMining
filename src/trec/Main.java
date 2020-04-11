@@ -81,7 +81,7 @@ public class Main {
         	
         	System.out.println(++cnt+". Executing report: "+r.getId());
         	// for each topic retrieve 100 documents
-        	List<Tuple> answers = LuceneQuery.getResultsMoreLikeThis(r, isearcher,ireader);
+        	List<Tuple> answers = LuceneQuery.getResultsTopTerms(r, isearcher,ireader);
         	
         	
         	

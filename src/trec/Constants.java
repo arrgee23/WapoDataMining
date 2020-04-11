@@ -29,6 +29,6 @@ public class Constants {
     
     
     public static final int CONTENT_QUERY_LENGTH = 30;
-    public static final int TITLE_QUERY_LENGTH = 100;
+    public static final int TITLE_QUERY_LENGTH = 10;
     
 }
