@@ -84,6 +84,7 @@ public class Main {
         	List<Tuple> answers = LuceneQuery.getResultsTopTerms(r, isearcher,ireader);
         	
         	
+        	//answers = Rerank.rerankWithCategory(r,answers);
         	
         	int count = 0;
         	System.out.println("Returned: "+answers.size());

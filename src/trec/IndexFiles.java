@@ -130,17 +130,45 @@ public class IndexFiles {
 					ft.setStoreTermVectorPositions(true);
 					ft.setStoreTermVectorPayloads(true);
 					ft.setStored(true);
-
-					if (r.content != null) {
-
-						Field content = new Field("content", r.content, ft);
-						// content.term
-						d.add(content);
-					} else {
-						Field content = new Field("content", "", ft);
-						d.add(content);
+					boolean unique_index = false;
+					
+					// try to concatenate title with content a few times
+					if(unique_index)
+					{
+						
+						if (r.content != null ) {
+							String buffer = r.content;
+							if(r.title!= null && r.title.length()!=0)
+							{
+								int factor = (int) Math.round(Math.sqrt(r.content.length()/(double)r.title.length()));
+								
+								for(int m=0;m<factor;m++) {
+									buffer+=r.title;
+								}
+							}	
+							Field content = new Field("content", buffer, ft);
+							
+							// content.term
+							d.add(content);
+						} else {
+							Field content = new Field("content", "", ft);
+							d.add(content);
+						}
+						
 					}
-
+					
+					else
+					{
+						if (r.content != null) {
+	
+							Field content = new Field("content", r.content, ft);
+							// content.term
+							d.add(content);
+						} else {
+							Field content = new Field("content", "", ft);
+							d.add(content);
+						}
+					}
 					if (r.date != null) {
 						Field date = new Field("date", r.date, StringField.TYPE_STORED);
 						// date.
