@@ -76,12 +76,12 @@ public class Main {
         for(Topic t : queryIdList) {
         	// search for the doc with id to get query document
         	//System.out.println(t.docid);
-        	Integer id = new Integer(0);
-        	Report r = LuceneQuery.getReportWithID(t.docid, isearcher,id);
+ 
+        	Report r = LuceneQuery.getReportWithID(t.docid, isearcher);
         	
         	System.out.println(++cnt+". Executing report: "+r.getId());
         	// for each topic retrieve 100 documents
-        	List<Tuple> answers = LuceneQuery.getResultsTopTerms(r, isearcher,ireader);
+        	List<Tuple> answers = LuceneQuery.getResultsTopTermsContent(r, isearcher,ireader);
         	
         	
         	//answers = Rerank.rerankWithCategory(r,answers);

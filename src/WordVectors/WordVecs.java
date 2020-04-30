@@ -179,7 +179,7 @@ public class WordVecs {
 	}*/
         try {
 	    WordVecs wv = new WordVecs(Constants.WORD_EMBEDDING_FILE);
-	    List<WordVec> wvl = wv.computeNNs("dog");
+	    List<WordVec> wvl = wv.computeNNs("india");
 	    for(WordVec vec: wvl) {
 	    	System.out.println(vec.word+" "+vec.norm+" "+vec.querySim);
 	    }
@@ -190,7 +190,8 @@ public class WordVecs {
                 wv.computeAndStoreNNs();
 			*/
 	    
-            /* // to print all precomputed NNs
+            /* 
+            // to print all precomputed NNs
             qe.loadPrecomputedNNs();
             List<WordVec> nwords = qe.computeNNs("conclus");
             for (WordVec word : nwords)

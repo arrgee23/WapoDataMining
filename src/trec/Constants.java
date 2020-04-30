@@ -8,9 +8,12 @@ public class Constants {
     public static final String INDEX_PATH = "index2";
     public static final String TOPIC_XML_SOURCE18 = "resources/topics.xml";
     public static final String TOPIC_XML_SOURCE = "resources/newsir19-background-linking-topics.xml";
+    public static final String DOCUMENT_TERMS_WEIGHTS_DUMP_FILE = "terms.txt";
+    public static final String DOCUMENT_TERMS_WEIGHTS_DUMP_FILE_TITLE = "terms_title.txt";
     
     public static final String OUTFILE_NAME = "results/res";
     public static final String DUMP_FILE = "dump.txt";
+    public static final String DUMP_FILE_TITLE = "dump_title.txt";
     public static final String WORD_EMBEDDING_FILE = "embedding.vec";
     public static final String FILE_NAME = "/media/i3/015d14d9-4f60-41b6-84af-5a23508580fb/home/arrgee/Documents/WashingtonPost.v2/data/TREC_Washington_Post_collection.v2.jl";
     

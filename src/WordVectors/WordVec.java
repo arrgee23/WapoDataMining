@@ -2,6 +2,7 @@
 package WordVectors;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
@@ -63,37 +64,75 @@ public class WordVec implements Comparable<WordVec> {
         }
         return norm;
     }
+    static int count = 0;
+    public WordVec scalerMult(double d,boolean isConsiderNorm) {
+    	//if(count<=2)
+        WordVec v = new WordVec(this.vec.length);
+    	//System.out.println(this.word+" "+d+" "+this.getNorm());
+    	
+    	for (int i = 0; i < this.vec.length; i++) {
+            //if(count<=2)
+            	//System.out.print(i+" "+this.vec[i]+"\t");
+    		v.vec[i] = this.vec[i]*d;
+    		if(!isConsiderNorm)
+    			v.vec[i] /= this.getNorm();
+    		
+    		//if(count<=2)
+            	//System.out.print(this.vec[i]+" \n");
+        }
+    	v.norm = d*this.norm;
+    	if(!isConsiderNorm)
+    		v.norm /= this.getNorm();
+    	//if(count<=2)
+       // System.out.println(" "+v.getNorm());
+    	//count++;
+    	return v;
+    }
 
     public double cosineSim(WordVec that) {
+    	if(that == null || that.vec==null)
+    		return 0;
         double sum = 0;
         for (int i = 0; i < this.vec.length; i++) {
-            if (that == null) {
-                return 0;
-            }
+            
             sum += vec[i] * that.vec[i];
         }
-        return sum / (this.norm*that.norm);
+        double a = this.getNorm();
+        double b = that.getNorm();
+        if(a==0 || b==0)
+        	return 0;
+        return sum / (a*b);
     }
 
     @Override
     public int compareTo(WordVec that) {
-        return this.querySim > that.querySim? -1 : this.querySim == that.querySim? 0 : 1;
+    	/*if(this.querySim!=Double.NaN && that.querySim!=Double.NaN)
+    		return this.querySim > that.querySim ? -1 : this.querySim == that.querySim ? 0 : 1;
+    	return 0;
+    	*/
+    	return -Double.compare(this.querySim, that.querySim);
     }
 
     byte[] getBytes() throws IOException {
-        byte[] byteArray;
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+        
+    	byte[] byteArray;
+        
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) 
+        {
             ObjectOutput out;
             out = new ObjectOutputStream(bos);
             out.writeObject(this);
             byteArray = bos.toByteArray();
             out.close();
         }
+        
         return byteArray;
     }
 
-    public static WordVec add(WordVec a, WordVec b) {
-        WordVec sum = new WordVec(a.word + ":" + b.word);
+    public static WordVec add(WordVec a, WordVec b) 
+    {
+
+    	WordVec sum = new WordVec(a.word + ":" + b.word);
         sum.vec = new double[a.vec.length];
         for (int i = 0; i < a.vec.length; i++) {
             sum.vec[i] = .5 * (a.vec[i]/a.getNorm() + b.vec[i]/b.getNorm());
@@ -111,7 +150,8 @@ public class WordVec implements Comparable<WordVec> {
     }
 
     public static WordVec add(List<WordVec> list) {
-
+    	if(list.size()==0)
+    		return null;
         WordVec sum = new WordVec(list.get(0).vec.length); // initially an all zero vector
 
         for (int i = 0; i < list.size(); i++) {
@@ -122,4 +162,39 @@ public class WordVec implements Comparable<WordVec> {
         sum.word = list.get(0).word;
         return sum;
     }
+    static FileWriter myWriter;
+    static {
+    	
+		try {
+			myWriter = new FileWriter("debug.txt");
+		}catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	 
+    }
+
+	public void print() {
+		try {
+			myWriter.write(this.word+"\n");
+			
+		 //System.out.println(this.word);
+	     if(this.vec==null) {
+	    	 myWriter.write("null"+"\n");
+	    	 return;
+	     }
+	     /*
+		for (int i = 0; i < this.vec.length; i++) {
+			myWriter.write(this.vec[i]+" ");
+			//System.out.print(this.vec[i]+" ");
+        }  */
+		myWriter.write("\n"+norm+"\n");
+		//System.out.println("\n"+norm);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+		}
+		
+	}
+		
 }    
