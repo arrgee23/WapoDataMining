@@ -282,3 +282,9 @@ ndcg_cut_5              400     0.5560
 
 ------------------------------------------------------
 Date : last 3 zeros has to be dropped in date format
+--------------------------------------------------------
+./trec_eval /home/i3/Documents/lucene-class-tutorial/adhoc.fire.en/en.qrels.126-175.2011.txt /home/i3/Documents/FIRE_Adhoc_SearchEngine/mtc1835-prf.res -q
+
+--------------------------------------------------------------
+Download MNIST dataset. Perform t-SNE on it and reduce it to two dimensions. Plot them on a 2D graph and calculate any three class separability metrics on the original data and the feature reduced data.
+
