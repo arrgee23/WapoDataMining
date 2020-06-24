@@ -307,197 +307,7 @@ public class LuceneQuery {
 
 
 
-	public static List<Tuple> getResultsMoreLikeThis(Report r, IndexSearcher isearcher,IndexReader ireader)  {
-		// generating query for top content terms
-		MoreLikeThis mlt = new MoreLikeThis(ireader);
-		mlt.setAnalyzer(new EnglishAnalyzer());
-		mlt.setMaxQueryTerms(Constants.CONTENT_QUERY_LENGTH);
-		mlt.setBoost(true);
-		String[] sarr = {"content"};
-		mlt.setFieldNames(sarr);
-
-		// generating query for top title terms
-		MoreLikeThis mlt2 = new MoreLikeThis(ireader);
-		mlt2.setAnalyzer(new EnglishAnalyzer());
-		mlt2.setMinDocFreq(0);
-		mlt2.setMinTermFreq(0);
-		mlt2.setMaxQueryTerms(Constants.TITLE_QUERY_LENGTH);
-		mlt2.setBoost(true);
-		String[] sarr2 = {"title"};
-		mlt2.setFieldNames(sarr2);
-
-		//mlt.setSimilarity( );
-		//System.out.println(mlt.getSimilarity().toString());
-		//tfIdf.
-		//mlt.
-		//System.out.println(mlt.describeParams()+"\nBoostFactor: "+mlt.getBoostFactor());
-
-		//Reader target = ireader;//... // orig source of doc you want to find similarities to
-
-		Integer lucene_id = new Integer(0);
-		Report rp = LuceneQuery.getReportWithID(r.id, isearcher);
-
-		lucene_id = r.index;
-		System.out.println("Searching for index id: "+lucene_id);
-
-		Query query = null;
-		Query contentQuery = null;
-		Query titleQuery = null;
-
-		if(lucene_id!=0) {
-			try {
-
-				// best tfidf scores with boost from content
-				contentQuery =  mlt.like(lucene_id);
-				titleQuery = mlt2.like(lucene_id);
-
-				Builder queryBuilder = new BooleanQuery.Builder()
-						.add(contentQuery, Occur.SHOULD);
-				queryBuilder.add(titleQuery,Occur.SHOULD);
-
-
-
-				List<String> st = returnStringTokens(r.title);
-
-				// add strings in title to query 
-				for (String s : st) 
-				{
-					queryBuilder.add(new
-							TermQuery(new Term("content", s)), Occur.SHOULD); 
-				}
-				//queryBuilder.add(new TermQuery(new Term("author", r.author)), Occur.SHOULD); 
-				query = queryBuilder.build();
-				System.out.println(query.toString());
-
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		}
-		else
-			assert(false);
-
-		//Hits hits = is.search(query);
-		// now the usual iteration thru 'hits' - the only thing to watch for is to make sure
-		//you ignore the doc if it matches your 'target' document, as it should be similar to itself
-
-		// parse through the returned documents
-		ScoreDoc[] hits = null;
-		try {
-			TopDocs td = isearcher.search(query, 100);
-
-			hits = td.scoreDocs;
-
-			//isearcher.search(query,10000).
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		// assertEquals(1, hits.length);
-
-		if (hits.length < 1) {
-			System.out.println("Your query did not return any result...");
-			assert (false);
-		}
-		/*
-		 * try { Explanation e = isearcher.explain(query,hits[2].doc);
-		 * System.out.println(e.getDescription()); for(Explanation e1:e.getDetails()) {
-		 * //System.out.println(e1.getDescription()+" "+e1.getValue()); } } catch
-		 * (IOException e1) { // TODO Auto-generated catch block e1.printStackTrace(); }
-		 */
-
-		LinkedList<Tuple> answers = new LinkedList<Tuple>();
-		try {
-			int added = 0;
-			for (int i = 0; i < hits.length; i++) {
-
-				if (added >= 5)
-					break;
-
-				String id = isearcher.doc(hits[i].doc).get("id");
-				String title = isearcher.doc(hits[i].doc).get("tltle");
-
-				if(id.equals(r.getId())) // document most similar with itself
-					continue;
-				if(r.title!=null && title!=null) {
-					if(title.equals(r.getTitle()))
-						continue;
-				}
-
-
-				// look in the previous documents with same title
-				String currTitle = isearcher.doc(hits[i].doc).get("title");
-				boolean alreadyAdded = false;
-				for(int j=i-1;j>=0;j--) {
-					String prevTitle = isearcher.doc(hits[j].doc).get("title");
-					if(prevTitle.equals(currTitle))
-					{
-						alreadyAdded = true;
-						break;
-					}
-				}
-				//if(alreadyAdded)
-				//continue;
-
-
-				String dateStr = isearcher.doc(hits[i].doc).get("date");
-
-
-
-				@SuppressWarnings("deprecation")
-				// Date resultReportDate = new Date(dateStr);
-				// Date queryReportDate = new Date(r.date);
-				Date resultDate = null;
-				Date queryDate = null;
-
-				// convert string to date when filterinng to classes
-				// TODO add Date field in report class
-				if (dateStr != null && r.date != null && !dateStr.equals("null") && !r.date.equals("null")) {
-					Instant result_instant = Instant.ofEpochSecond( Long.parseLong(dateStr));
-					Instant query_instant = Instant.ofEpochSecond( Long.parseLong(r.date) );
-
-
-					resultDate = Date.from( result_instant );
-					//resultDate = Long.parseLong(dateStr);
-					queryDate = Date.from( query_instant );
-				}
-				double score = hits[i].score;
-				String codename = "onlytitle";
-
-				// allow only articles published on or before
-				if(
-						resultDate==null || queryDate==null ||
-						//resultDate.after(queryDate) || 
-						resultDate.before(queryDate) || 
-						(
-								resultDate.getDay()==queryDate.getDay() 
-								&& resultDate.getMonth()==queryDate.getMonth() 
-								&& resultDate.getYear()==queryDate.getYear()
-								)
-						)
-				{
-					String type = isearcher.doc(hits[i].doc).get("articleType");
-					if(type!=null) {
-						// ignore articles with this type as specified
-						if(type.equals("Opinion") || type.equals("Opinions") ||
-								type.equals("Letters to the Editor") || type.equals("The Post's View")) {
-							continue;
-						}
-
-					}
-					//System.out.println(added+": "+hits[i].doc+" "+id);
-					answers.add(new Tuple(id, score, codename,type));
-					added++;
-				}
-			}
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return answers;
-
-	}
-
+	
 	
 	public static List<Tuple> getResultsTopTermsContent(Report r, IndexSearcher isearcher,IndexReader ireader)  {
 		// generating query for top content terms
@@ -514,7 +324,7 @@ public class LuceneQuery {
 		Report rp = LuceneQuery.getReportWithID(r.id, isearcher);
 
 		lucene_id = r.index;
-		System.out.println("Searching for index id: "+lucene_id);
+		//System.out.println("Searching for index id: "+lucene_id);
 
 		Query query = null;
 		Query contentQuery = null;
@@ -530,7 +340,7 @@ public class LuceneQuery {
 				org.apache.lucene.util.PriorityQueue<ScoreTerm> pqContent =  mlt.retrieveTerms(lucene_id);
 				//titleQuery = mlt2.like(lucene_id);
 				
-				System.out.println(pqContent.size());
+				//System.out.println(pqContent.size());
 				
 				// build query with specific number of terms from title and content
 				Builder queryBuilder = new BooleanQuery.Builder();

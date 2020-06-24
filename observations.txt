@@ -286,5 +286,26 @@ Date : last 3 zeros has to be dropped in date format
 ./trec_eval /home/i3/Documents/lucene-class-tutorial/adhoc.fire.en/en.qrels.126-175.2011.txt /home/i3/Documents/FIRE_Adhoc_SearchEngine/mtc1835-prf.res -q
 
 --------------------------------------------------------------
-Download MNIST dataset. Perform t-SNE on it and reduce it to two dimensions. Plot them on a 2D graph and calculate any three class separability metrics on the original data and the feature reduced data.
+./trec_eval ../bqrels.exp-gains.txt /home/i3/git/Relevance-Model/results/topics.xml-LMJelinek-Mercer0.6-D20-T70-rm3-0.6.res.baseline -m ndcg_cut
+----------------------------------------------------------
+DOIDA RM3 results
+
+title query only to content
+ndcg_cut_5            	all	0.1268
+prev+rm3 words added from content
+ndcg_cut_5            	all	0.1419
+
+
+title query only to title
+ndcg_cut_5            	all	0.0972
+prev+rm3 words added from content
+ndcg_cut_5            	all	0.1335
+
+title query to title
+0.1265
+pick words from title
+0.1300
+
+
+
 

@@ -54,7 +54,7 @@ public class Main {
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");  
 			LocalDateTime now = LocalDateTime.now();  
 			//System.out.println(dtf.format(now));  
-			String outName = Constants.OUTFILE_NAME+dtf.format(now)+".txt";
+			String outName = Constants.OUTFILE_NAME+dtf.format(now)+".res";
 			System.out.println(outName);
 			
 			File myObj = new File(outName);
@@ -79,7 +79,7 @@ public class Main {
  
         	Report r = LuceneQuery.getReportWithID(t.docid, isearcher);
         	
-        	System.out.println(++cnt+". Executing report: "+r.getId());
+        	System.out.println(++cnt+". Executing topic: "+t.number);
         	// for each topic retrieve 100 documents
         	List<Tuple> answers = LuceneQuery.getResultsTopTermsContent(r, isearcher,ireader);
         	
@@ -87,7 +87,7 @@ public class Main {
         	//answers = Rerank.rerankWithCategory(r,answers);
         	
         	int count = 0;
-        	System.out.println("Returned: "+answers.size());
+        	//System.out.println("Returned: "+answers.size());
         	for(Tuple answer : answers) {
         		if(answer!=null) {
 	        		//System.out.printf("%d Q0 %s %d %.1f %s\n",extractTopicNo(t),answer.docId,count,answer.score,answer.codename);
