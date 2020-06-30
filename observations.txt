@@ -264,7 +264,6 @@ content title score
 30  10  0.40
 30	50  0.3997
 ------------------------------------------------------------
-./trec_eval ../bqrels.exp-gains.txt ../results/mlt_allfilter_content40_title10.txt -m ndcg_cut -q
 -------------------------------------------------------------
 40 content 10 title works best in 
 
@@ -306,6 +305,33 @@ title query to title
 pick words from title
 0.1300
 
+words from content
+200: 3931
+150: 3928
+100: 3936
+90: 3932
+80: 3958
+70: 0.3940
+60: 3956
+50: 3958
+40: 3872
+30: 3772
+10: 3366
 
+words from title only 
+10: 2255
+20: 2276
+30:
 
+-------
+mix hitlist
 
+lambda	title_len	content_len		score		normalized_add
+------------------------------------------------------------------------------
+0.5		20			50				0.3352		yes
+"		"			"				0.3789		no
+0.2		20			50				0.37		yes
+"		"			"				0.3931			no
+"		"			"				0.5259(2019)			no		
+0.1		"			"				0.3973			no
+"		"			"				0.3787		yes

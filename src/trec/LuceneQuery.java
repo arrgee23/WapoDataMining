@@ -5,9 +5,13 @@ import java.io.StringReader;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Scanner;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -20,10 +24,8 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.mlt.MoreLikeThis;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BooleanQuery.Builder;
 import org.apache.lucene.search.BoostQuery;
@@ -32,6 +34,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TotalHits;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
@@ -303,102 +306,128 @@ public class LuceneQuery {
 		return answers;
 
 	}
-
-
-
-
 	
-	
-	public static List<Tuple> getResultsTopTermsContent(Report r, IndexSearcher isearcher,IndexReader ireader)  {
-		// generating query for top content terms
-		myTFIDF mlt = new myTFIDF(ireader);
-		mlt.setAnalyzer(new EnglishAnalyzer());
-		mlt.setMaxQueryTerms(Constants.CONTENT_QUERY_LENGTH);
-		mlt.setBoost(true);
-		String[] sarr = {"content"};
-		mlt.setFieldNames(sarr);
-
-
+	public static Query makeTopKTermQueryFromReport(int k,String fieldToExtractTermsForm,
+			Report r,IndexReader ireader,
+			IndexSearcher isearcher, int minTermFreq
+			, String[] fieldsToIssueQueryOn) {
 		
-		Integer lucene_id = new Integer(0);
-		Report rp = LuceneQuery.getReportWithID(r.id, isearcher);
+		// generating query for top content terms
+				myTFIDF mlt = new myTFIDF(ireader);
+				mlt.setAnalyzer(new EnglishAnalyzer());
+				mlt.setMinTermFreq(minTermFreq);
+				mlt.setMaxQueryTerms(k);
+				mlt.setBoost(true);
+				String[] sarr = {fieldToExtractTermsForm};
+				mlt.setFieldNames(sarr);
 
-		lucene_id = r.index;
-		//System.out.println("Searching for index id: "+lucene_id);
 
-		Query query = null;
-		Query contentQuery = null;
-		Query titleQuery = null;
-
-		if(lucene_id!=0) {
-			try {
-
-				// best tfidf scores with boost from content
-				//contentQuery =  mlt.like(lucene_id);
-
-				// extract priority queue of top terms from content and title
-				org.apache.lucene.util.PriorityQueue<ScoreTerm> pqContent =  mlt.retrieveTerms(lucene_id);
-				//titleQuery = mlt2.like(lucene_id);
 				
-				//System.out.println(pqContent.size());
-				
-				// build query with specific number of terms from title and content
-				Builder queryBuilder = new BooleanQuery.Builder();
+				Integer lucene_id = new Integer(0);
+				Report rp = LuceneQuery.getReportWithID(r.id, isearcher);
 
-				float leastScoreContent = -1;
-				float boostFactorContent = 1;
-				int count = 0;
-				ScoreTerm scoreTerm;
-				while((scoreTerm = pqContent.pop()) != null && count<Constants.CONTENT_QUERY_LENGTH) {
-					Query tq = new TermQuery(new Term("content", scoreTerm.word));
-					
-					if (leastScoreContent == -1) {
-						leastScoreContent = (scoreTerm.score);
-					}
-					float myScore = (scoreTerm.score);
-					tq = new BoostQuery(tq, boostFactorContent * myScore / leastScoreContent);
-					
+				lucene_id = r.index;
+				//System.out.println("Searching for index id: "+lucene_id);
+
+				Query query = null;
+				
+				if(lucene_id!=0) {
 					try {
-						queryBuilder.add(tq, BooleanClause.Occur.SHOULD);
+
+						// best tfidf scores with boost from content
+						//contentQuery =  mlt.like(lucene_id);
+
+						// extract priority queue of top terms from content and title
+						org.apache.lucene.util.PriorityQueue<ScoreTerm> pqContent =  mlt.retrieveTerms(lucene_id);
+						//titleQuery = mlt2.like(lucene_id);
 						
-					}
-					//catch (IndexSearcher.TooManyClauses ignore) 
-					catch(Exception e){
-						break;
-					}
+						//System.out.println(pqContent.size());
+						
+						// build query with specific number of terms from title and content
+						Builder queryBuilder = new BooleanQuery.Builder();
+
+						float leastScoreContent = -1;
+						float boostFactorContent = 1;
+						int count = 0;
+						ScoreTerm scoreTerm;
+						while((scoreTerm = pqContent.pop()) != null && count<k) {
+
+							if (leastScoreContent == -1) {
+								leastScoreContent = (scoreTerm.score);
+							}
+							float myScore = (scoreTerm.score);
+							
+							/*
+							 * costruct the query such that
+							 * Search for the key word
+							 *  on given(fieldsToIssueQueryOn) 
+							 *  set of fields
+							 */
+							for(int i=0;i<fieldsToIssueQueryOn.length;i++) {
+								Query tq = new TermQuery(new Term(fieldsToIssueQueryOn[i], scoreTerm.word));
+								tq = new BoostQuery(tq, boostFactorContent * myScore / leastScoreContent);
+								try {
+									queryBuilder.add(tq, BooleanClause.Occur.SHOULD);
+								}
+								//catch (IndexSearcher.TooManyClauses ignore) 
+								catch(Exception e){
+									break;
+								}
+							}
+							Query tq = new TermQuery(new Term("content", scoreTerm.word));
+							Query tqt = new TermQuery(new Term("title", scoreTerm.word));
+							
+							tq = new BoostQuery(tq, boostFactorContent * myScore / leastScoreContent);
+							tqt = new BoostQuery(tqt, boostFactorContent * myScore / leastScoreContent);
+							
+							
 
 
-					count++;
+							count++;
+						}
+						
+
+
+						query = queryBuilder.build();
+						System.out.println(query.toString());
+
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 				}
-				
+				else
+					assert(false);
+		return query;
 
+	}
+	
+	
 
-				query = queryBuilder.build();
-				System.out.println(query.toString());
-
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		}
-		else
-			assert(false);
-
+	public static List<Tuple> getResultsTopTermsContent(Report r, IndexSearcher isearcher,IndexReader ireader)  {
+		String[] fieldsToIssueQueryOn = {"title","content"};
+		
+		Query query = makeTopKTermQueryFromReport(Constants.TITLE_QUERY_LENGTH, "title", r, ireader,isearcher,1,fieldsToIssueQueryOn);
+		Query contentQuery = makeTopKTermQueryFromReport(Constants.CONTENT_QUERY_LENGTH, "content", r, ireader,isearcher,2,fieldsToIssueQueryOn);
+		
 		//Hits hits = is.search(query);
 		// now the usual iteration thru 'hits' - the only thing to watch for is to make sure
 		//you ignore the doc if it matches your 'target' document, as it should be similar to itself
-
-		// parse through the returned documents
-		ScoreDoc[] hits = null;
+		TopDocs td1=null,td2 = null;
 		try {
-			TopDocs td = isearcher.search(query, 50);
-
-			hits = td.scoreDocs;
-
+			td1 = isearcher.search(query, 100);
+			td2 = isearcher.search(contentQuery, 100);
 			//isearcher.search(query,10000).
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		float lambda = (float) 0.08;
+		TopDocs tdMerged = weightedMergeTopdoc(td1,td2,lambda);
+		
+		
+		// parse through the returned documents
+		ScoreDoc[] hits = null;
+		hits = tdMerged.scoreDocs;
 		// assertEquals(1, hits.length);
 
 		if (hits.length < 1) {
@@ -425,6 +454,8 @@ public class LuceneQuery {
 
 				if(id.equals(r.getId())) // document most similar with itself
 					continue;
+				
+				// collection may contain duplicate of the original article
 				if(r.title!=null && title!=null) {
 					if(title.equals(r.getTitle()))
 						continue;
@@ -503,6 +534,91 @@ public class LuceneQuery {
 		}
 		return answers;
 
+	}
+	
+	static  void normalizeScore(TopDocs td) {
+		double sum = 0;
+		for(int i=0;i<td.scoreDocs.length;i++) {
+			
+			sum += td.scoreDocs[i].score;
+			
+		}
+		for(int i=0;i<td.scoreDocs.length;i++) {
+			td.scoreDocs[i].score/=sum;
+		}
+	}
+	/*
+	 * Merge two topdocs with scores changed as 
+	 *  t1[i].score =*lambda and t2[i].score=*(1-lambda)
+	 * then merge two lists and rerank
+	 * during merging if any one of them appears in both list, then they are added
+	 * 
+	 */
+	public static TopDocs weightedMergeTopdoc(TopDocs t1, TopDocs t2, float lambda) {
+		// map of docid, ScoreDoc
+		HashMap<Integer, ScoreDoc> maptd= new HashMap<Integer,ScoreDoc>();
+		//normalizeScore(t1);
+		//normalizeScore(t2);
+		
+		//printTopDocs(t1);
+		//printTopDocs(t2);
+		
+		for(int i=0;i<t1.scoreDocs.length;i++) {
+			
+			// put every scoredoc in map put a map entry
+			int luceneDocID = t1.scoreDocs[i].doc;
+			ScoreDoc ptr = t1.scoreDocs[i];
+			float score = ptr.score;
+			
+			maptd.put(luceneDocID, new ScoreDoc(luceneDocID,score*lambda));
+			
+		}
+		for(int i=0;i<t2.scoreDocs.length;i++) {
+			
+			// put every scoredoc in map put a map entry
+			int luceneDocID = t2.scoreDocs[i].doc;
+			ScoreDoc ptr = t2.scoreDocs[i];
+			float score = ptr.score;
+			
+			// if the score for the document doesnt exist put to map
+			if(!maptd.containsKey(luceneDocID))
+				maptd.put(luceneDocID, new ScoreDoc(luceneDocID,score*(1-lambda) ));
+			else { // update the score
+				ScoreDoc sameEntry = maptd.get(luceneDocID);
+				sameEntry.score += score*(1-lambda);
+			}
+				
+			
+		}
+		
+		// put the map into a sorted ScoreDoc[]
+		ScoreDoc[] sd = new ScoreDoc[maptd.size()];
+		int  i = 0;
+		for(Entry<Integer, ScoreDoc> e : maptd.entrySet()) {
+			sd[i] = e.getValue();
+			i++;
+		}
+		
+		Arrays.sort(sd, new Comparator <ScoreDoc>() {
+			
+			public int compare(ScoreDoc s1,ScoreDoc s2) {
+				return -Float.compare(s1.score, s2.score);
+			}
+		});
+		
+		TopDocs mergedTD = new TopDocs(new TotalHits(sd.length, TotalHits.Relation.EQUAL_TO),sd);
+		//printTopDocs(mergedTD);
+		return mergedTD;
+		
+		
+	}
+	
+	static void printTopDocs(TopDocs td) {
+		System.out.println("-------------------------------------");
+		for(int i=0;i<td.scoreDocs.length;i++) {
+			System.out.println(td.scoreDocs[i].doc+" : "+td.scoreDocs[i].score);
+		}
+		System.out.println("-------------------------------------");
 	}
 
 	static List<String> returnStringTokens(String str) {

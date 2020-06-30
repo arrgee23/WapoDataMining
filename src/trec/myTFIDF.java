@@ -820,6 +820,7 @@ public final class myTFIDF {
 
 		Map<String, Map<String, Int>> field2termFreqMap = new HashMap<>();
 		for (String fieldName : fieldNames) {
+			//System.out.println(fieldName);
 			final Fields vectors = ir.getTermVectors(docNum);
 			final Terms vector;
 			if (vectors != null) {
@@ -839,6 +840,7 @@ public final class myTFIDF {
 					}
 				}
 			} else {
+				//System.out.println(fieldName);
 				addTermFrequencies(field2termFreqMap, vector, fieldName);
 			}
 		}
@@ -882,7 +884,7 @@ public final class myTFIDF {
 				continue;
 			}
 			final int freq = (int) termsEnum.totalTermFreq();
-
+			//System.out.println(term+" "+freq);
 			// increment frequency
 			Int cnt = termFreqMap.get(term);
 			if (cnt == null) {

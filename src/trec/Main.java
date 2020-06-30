@@ -83,7 +83,9 @@ public class Main {
         	// for each topic retrieve 100 documents
         	List<Tuple> answers = LuceneQuery.getResultsTopTermsContent(r, isearcher,ireader);
         	
-        	
+        	/*
+        	 * Here we try correlation related data to learn
+        	 */
         	//answers = Rerank.rerankWithCategory(r,answers);
         	
         	int count = 0;

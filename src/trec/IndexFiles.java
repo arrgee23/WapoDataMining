@@ -4,6 +4,7 @@ package trec;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
@@ -23,6 +24,11 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
+
+import edu.stanford.nlp.ie.AbstractSequenceClassifier;
+import edu.stanford.nlp.ie.crf.CRFClassifier;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.util.Triple;
 
 public class IndexFiles {
 
@@ -45,6 +51,7 @@ public class IndexFiles {
 		/// String docsPath = null;
 		boolean append = true;
 		boolean createindex = true; // re index all
+		boolean nerIndex = true;
 
 		Directory directory = null;
 		try {
@@ -54,6 +61,14 @@ public class IndexFiles {
 			e1.printStackTrace();
 		}
 		Analyzer analyzer = new EnglishAnalyzer(); // ..standard english word tokenization
+		String serializedClassifier = "/home/i3/Documents/samford-ner-4/stanford-ner-4.0.0/classifiers/english.all.3class.distsim.crf.ser.gz";
+		AbstractSequenceClassifier<CoreLabel> classifier = null;
+		try {
+			classifier = CRFClassifier.getClassifier(serializedClassifier);
+		} catch (ClassCastException | ClassNotFoundException | IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 
 		if (createindex) {
 			try {
@@ -61,7 +76,7 @@ public class IndexFiles {
 
 				// Analyzer analyzer = new StandardAnalyzer();
 				IndexWriterConfig config = new IndexWriterConfig(analyzer);
-				//System.out.println(config.getSimilarity().toString());
+				// System.out.println(config.getSimilarity().toString());
 				if (!append) {
 					// Create a new index in the directory, removing any
 					// previously indexed documents:
@@ -90,10 +105,10 @@ public class IndexFiles {
 					// parse a document from json and store in index
 
 					r = ParsingOnly.readOneReport3(jp);
-					
+
 					if (r == null)
 						continue;// Add fields to the document
-					
+
 					// if(r.id.equals("-1"))
 					// break;
 
@@ -131,42 +146,68 @@ public class IndexFiles {
 					ft.setStoreTermVectorPayloads(true);
 					ft.setStored(true);
 					boolean unique_index = false;
-					
+
 					// try to concatenate title with content a few times
-					if(unique_index)
-					{
-						
-						if (r.content != null ) {
+					if (unique_index) {
+
+						if (r.content != null) {
 							String buffer = r.content;
-							if(r.title!= null && r.title.length()!=0)
-							{
-								int factor = (int) Math.round(Math.sqrt(r.content.length()/(double)r.title.length()));
-								
-								for(int m=0;m<factor;m++) {
-									buffer+=r.title;
+							if (r.title != null && r.title.length() != 0) {
+								int factor = (int) Math
+										.round(Math.sqrt(r.content.length() / (double) r.title.length()));
+
+								for (int m = 0; m < factor; m++) {
+									buffer += r.title;
 								}
-							}	
+							}
 							Field content = new Field("content", buffer, ft);
-							
+
 							// content.term
 							d.add(content);
 						} else {
 							Field content = new Field("content", "", ft);
 							d.add(content);
 						}
-						
+
 					}
-					
-					else
-					{
+
+					else {
 						if (r.content != null) {
-	
+
 							Field content = new Field("content", r.content, ft);
 							// content.term
 							d.add(content);
+							if (nerIndex) {
+								List<Triple<String, Integer, Integer>> triples = classifier
+										.classifyToCharacterOffsets(r.content);
+								StringBuffer sb = new StringBuffer();
+								int len = 0;
+								for (Triple<String, Integer, Integer> trip : triples) {
+									String tag = trip.first();
+									String s = r.content.substring(trip.second, trip.third);
+									String toAppend = tag + "/" + s + " ";
+									sb.append(toAppend);
+									len += toAppend.length();
+									
+									if(len>28000)
+										break;
+									/*
+									 * System.out.
+									 * printf("%s over string: <%s> character offsets [%d, %d) in sentence %d.%n",
+									 * trip.first(), str.substring(trip.second, trip.third) ,trip.second(),
+									 * trip.third, j);
+									 */
+								}
+								Field contentner = new Field("contentner", sb.toString(), StringField.TYPE_STORED);
+								d.add(contentner);
+							}
 						} else {
 							Field content = new Field("content", "", ft);
 							d.add(content);
+							if (nerIndex) {
+								Field contentner = new Field("contentner", "", StringField.TYPE_STORED);
+								d.add(contentner);
+							}
 						}
 					}
 					if (r.date != null) {
@@ -192,14 +233,35 @@ public class IndexFiles {
 					if (r.title != null) {
 
 						Field title = new Field("title", r.title, ft);
-						// Field title = new Field("title", r.title,
-						// TextField.TYPE_STORED,Field.TermVector.YES);
 						d.add(title);
+						if (nerIndex) {
+							List<Triple<String, Integer, Integer>> triples = classifier
+									.classifyToCharacterOffsets(r.title);
+							StringBuffer sb = new StringBuffer();
+							for (Triple<String, Integer, Integer> trip : triples) {
+								sb.append(trip.first() + "/" + r.title.substring(trip.second, trip.third) + " ");
+								/*
+								 * System.out.
+								 * printf("%s over string: <%s> character offsets [%d, %d) in sentence %d.%n",
+								 * trip.first(), str.substring(trip.second, trip.third) ,trip.second(),
+								 * trip.third, j);
+								 */
+							}
+							Field titlener = new Field("titlener", sb.toString(), StringField.TYPE_STORED);
+							// Field title = new Field("title", r.title,
+							// TextField.TYPE_STORED,Field.TermVector.YES);
+							d.add(titlener);
+						}
+
 					} else {
 						Field title = new Field("title", "", ft);
 						// Field title = new Field("title", r.title,
 						// TextField.TYPE_STORED,Field.TermVector.YES);
 						d.add(title);
+						if (nerIndex) {
+							Field titlener = new Field("titlener", "", StringField.TYPE_STORED);
+							d.add(titlener);
+						}
 					}
 
 					if (r.url != null) {
@@ -243,7 +305,6 @@ public class IndexFiles {
 			System.out.println("Index already in directory '" + indexPath + "'...");
 
 	}
-
 
 	public static void main(String[] args) {
 		createWapoIndex();
