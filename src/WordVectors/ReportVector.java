@@ -49,7 +49,7 @@ public class ReportVector extends WordVec{
 		
 		for (int i = 0; i < cnt; i++) {
 			WordVec wv = wvs.wordvecmap.get(words[i]);
-			WordVec newVec = null;
+			WordVec newVec = wv;
 		
 			if(wv!=null) {
 				

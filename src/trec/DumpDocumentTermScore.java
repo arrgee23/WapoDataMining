@@ -84,7 +84,7 @@ public class DumpDocumentTermScore {
 	
 		try {
 			IndexReader reader = DirectoryReader.open(FSDirectory.open(indexFile.toPath()));
-			writeDocumentImportnatWordsTofile(reader,80,Constants.DOCUMENT_TERMS_WEIGHTS_DUMP_FILE_TITLE,"title");
+			writeDocumentImportnatWordsTofile(reader,40,Constants.DUMP_WORD2VEC_KEY_VAL_FILE_CONTENT_2020,"content");
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

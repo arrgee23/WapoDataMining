@@ -1,3 +1,15 @@
+to train word2vec on some field of data.
+use DumpForWord2Vec
+
+// to train word2vec on dumps
+./word2vec -train /media/i3/7233c927-5a17-4fe9-bedd-784c6f7e151d/content_dump_word2vec_train_wapo_v3.txt -output wapov3.bin -cbow 1 -size 500 -window 10 -negative 10 -hs 0 -sample 1e-5 -threads 40 -binary 1 -iter 3 -min-count 10
+
+// dump top terms to text file (remove printf)
+
+// to construct document embeddings from word2vec:
+
+
+----------------------------------------------------
 Contents array in JSON
 
 1. type:"kicker" denotes the type of article
@@ -172,7 +184,7 @@ ndcg_cut_200            all     0.4569
 ndcg_cut_500            all     0.4557
 ndcg_cut_1000           all     0.4557
 
----------------------------------------
+-----------------------------------------
 mlt_content30_title10_allfilter.txt
 ndcg_cut_5              all     0.4060
 ndcg_cut_10             all     0.4095
@@ -331,7 +343,84 @@ lambda	title_len	content_len		score		normalized_add
 0.5		20			50				0.3352		yes
 "		"			"				0.3789		no
 0.2		20			50				0.37		yes
-"		"			"				0.3931			no
-"		"			"				0.5259(2019)			no		
-0.1		"			"				0.3973			no
+"		"			"				0.3931		no
+"		"			"				0.5259(2019)no		
+0.1		"			"				0.3973	*	no
 "		"			"				0.3787		yes
+
+----------------------------------------------------------------
+this score is for ner table and normal table merge
+0.8		-			-				0.3282		yes
+(title-content table) 
+0.8		-			-				0.3325		not normalized
+
+#we notice not_normalized generally improves performance so we dont normalize
+
+# content + contentner query
+ndcg_cut_5            	all	0.3714
+
+# content + contentner query+lambda*content_query_boost+(1-lambda)*contentner_query_boost
+ndcg_cut_5            	all	0.3873 lambda=0.8 
+ndcg_cut_5            	all	0.3002 lambda=0.2
+ndcg_cut_5				all	0.3898	lambda = 0.9
+ndcg_cut_5				all 0.3958	lambda = 1
+
+-------------------------------------------------------------
+# content + titlener query+lambda*content_query_boost+(1-lambda)*titlener_query_boost
+ndcg_cut_5            	all	0.3969 lambda=0.8
+ndcg_cut_5            	all	0.3961 lambda=0.6*vecct
+ndcg_cut_5            	all	0.3941	lambda = 0.5
+ndcg_cut_5            	all	0.5254(2019)*
+-------------------------------------------------------
+vector+content-nerquery
+----------------------------------------------------
+lambda*queryTopdocc (1-lambda)*vectortopdoc
+*lambda = 0.6 0.4041 (more robust)
+lambda = 0.8 0.4007
+lambda = 0.4 0.4022
+lambda = 0.5 0.4063
+
+*lambda = 0.6 0.5131 (2019 result)
+------------------------------------------------------
+word2vec only
+2018 35 words
+0.3175 
+
+-------------------------------------
+Qmix
+title 30*0.4,mincoccur = 1:  content 50*0.6,minoccur=2 ---> 3894
+./results/res2020-07-08_16-48-01.res 
+
+title 20*0.4,mincoccur = 1:  content 50*0.6,minoccur=2 ---> 3894
+../results/res2020-07-08_16-43-14.res 
+
+
+title 20*0.5,mincoccur = 1:  content 50*0.5,minoccur=2 ---> 3909
+../results/res2020-07-08_16-55-36.res 
+
+title 20*0.5,mincoccur = 1:  content 80*0.5,minoccur=2 ---> 3909
+../results/res2020-07-08_16-55-36.res 
+
+
+
+title 20*0.1,mincoccur = 1:  content 80*0.9,minoccur=2 ---> 
+./trec_eval ../qrels/bqrels.exp-gains.txt -m ndcg_cut ../results/res2020-07-08_20-00-39.res 
+ndcg_cut_5            	all	0.3988
+
+
+onlycontent-bm25-words=80-2019
+../results/res2020-07-08_20-30-48.res 
+ndcg_cut_5            	all	0.4860****
+
+
+
+-----------------------------------------
+docvec-2018-unweightedSum-words=20
+./trec_eval ../qrels/bqrels.exp-gains.txt -m ndcg_cut ../results/res2020-07-08_22-41-04.res 
+ndcg_cut_5            	all	0.2614****
+
+
+docvec-2018-unweightedSum-words=25
+ ./trec_eval ../qrels/bqrels.exp-gains.txt -m ndcg_cut ../results/res2020-07-08_22-31-36.res 
+ndcg_cut_5            	all	0.2736****
+

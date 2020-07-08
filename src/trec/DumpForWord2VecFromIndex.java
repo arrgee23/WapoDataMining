@@ -188,7 +188,7 @@ public class DumpForWord2VecFromIndex {
 
 	
 	public static void main(String[] args) throws Exception {
-		DumpForWord2VecFromIndex dumpIndex = new DumpForWord2VecFromIndex(Constants.INDEX_PATH, Constants.DUMP_FILE_TITLE, "title");
+		DumpForWord2VecFromIndex dumpIndex = new DumpForWord2VecFromIndex(Constants.INDEX_PATH, Constants.DUMP_FILE_CONTENT_2020, "content");
         dumpIndex.dumpIndex();
     	
     }

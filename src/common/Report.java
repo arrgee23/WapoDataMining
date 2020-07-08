@@ -1,4 +1,4 @@
-package trec;
+package common;
 
 import org.jsoup.Jsoup;
 
@@ -7,7 +7,7 @@ public class Report{
 		
 	}
     public Report(String id, String url, String title, String author, String date, String source, String articleType,
-			String content,String nercontent,String nertitle) {
+			String content) {
 		super();
 		this.id = id;
 		this.url = url;
@@ -17,8 +17,6 @@ public class Report{
 		this.source = source;
 		this.articleType = articleType;
 		this.content = content;
-		this.nercontent = nercontent;
-		this.nertitle = nertitle;
 	}
 
 	String id;
@@ -30,9 +28,6 @@ public class Report{
     String articleType;
     String content;
     public int index;
-    String nercontent;
-    String nertitle;
-    
 	public String getId() {
 		return id;
 	}

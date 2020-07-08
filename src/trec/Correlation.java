@@ -492,7 +492,7 @@ public class Correlation {
 		if(firstFound)
 			return min/1.1;
 		else
-			return 0.75;
+			return 0.0055;
 	}
 	public static void main(String[] args) {
 		System.out.println(2/(double)3);

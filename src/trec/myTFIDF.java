@@ -682,7 +682,7 @@ public final class myTFIDF {
 			}
 
 			// count no of words in a field needed for b25 uncomment for normal score
-			boolean bm25Mode = false;
+			boolean bm25Mode = Constants.BM25_MODE;
 			int countWordsInField = 0;
 			if (bm25Mode) {
 				for (Map.Entry<String, Int> tfEntry : perWordTermFrequencies.entrySet()) { // for every word
@@ -718,7 +718,7 @@ public final class myTFIDF {
 					score = tf * idf;
 				else {
 					float k1 = 1.2f;
-					float b = 0.4f;
+					float b = 0.5f;
 
 					score = getBM25Score(word, tf, fieldName, ir,countWordsInField, k1, b);
 				}

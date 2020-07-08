@@ -1,4 +1,4 @@
-package trec;
+package common;
 
 import java.io.File;
 import java.io.IOException;
@@ -177,25 +177,9 @@ public class ParsingOnly {
 			if (id.isNull() || id == null)
 				return null;
 			else {
-				
-				
-				String idstr = "", urlstr = "", titlestr = "", datestr = "",
-						authorstr = "", typestr = "", sourcestr = "";
-				if(id!=null)
-					idstr = id.asText();
-				if(url!=null)
-					urlstr = url.asText();
-				if(title!=null)
-					titlestr = title.asText();
-				if(date!=null)
-					datestr = date.asText();
-				if(author!=null)
-					authorstr = author.asText();
-				if(type!=null)
-					typestr = type.asText();
-				if(source!=null)
-					sourcestr = source.asText();
-				
+				String idstr = id.asText(), urlstr = url.asText(), titlestr = title.asText(), datestr = date.asText(),
+						authorstr = author.asText(), typestr = type.asText(), sourcestr = source.asText();
+
 				String str = "";
 
 				for (int i = 0; i < contentsArr.size(); i++) {

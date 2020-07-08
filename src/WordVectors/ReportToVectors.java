@@ -16,6 +16,9 @@ import java.util.Map;
 
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TotalHits;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
@@ -64,7 +67,7 @@ public class ReportToVectors {
 		return distList.subList(0, Math.min(100, distList.size()));
 	}
 
-	ReportToVectors(String stringAndWeightsFile,int k)
+	public ReportToVectors(String stringAndWeightsFile,int k)
 	{
 
 		this.reportVecMap = new HashMap<String, ReportVector>();
@@ -85,7 +88,7 @@ public class ReportToVectors {
 					String[] tokens = line.split("\\s+");
 					ReportVector rv = null;
 					if(tokens.length>1) {
-						rv = new ReportVector(tokens,wvs,k,true,false);
+						rv = new ReportVector(tokens,wvs,k,Constants.IS_VECTOR_SUM_WEIGHTED,false);
 						if(rv.vec!=null)
 							reportVecMap.put(rv.word, rv);
 					}
@@ -145,9 +148,12 @@ public class ReportToVectors {
 			System.out.println(t.number+". Executing report: "+t.docid+"\n");
 			Report queryReport = trec.LuceneQuery.getReportWithID(t.docid,isearcher);
 			List<ReportVector> similar = rvs.computeNNs(t.docid);
+			
+			TopDocs td = makeTopDocsFromReportVectors(similar,isearcher);
 			int count = 0;
 			for(ReportVector r: similar) 
 			{
+				
 				Report resultReport = trec.LuceneQuery.getReportWithID(r.word, isearcher);
 				if(queryReport.getTitle().equals(resultReport.getTitle()))
 					continue;
@@ -157,6 +163,27 @@ public class ReportToVectors {
 				count++;
 			}
 		}
+	}
+
+	public static TopDocs makeTopDocsFromReportVectors(List<ReportVector> similar,
+			IndexSearcher isearcher) {
+		ScoreDoc[] sd = new ScoreDoc[similar.size()];
+		int i=0;
+		for(ReportVector r: similar) 
+		{
+			
+			Report resultReport = trec.LuceneQuery.getReportWithID(r.word, isearcher);
+			//System.out.println(r.word+" "+r.querySim);
+			HashMap<Integer, ScoreDoc> maptd= new HashMap<Integer,ScoreDoc>();
+			int luceneDocID = resultReport.index;
+			float score = (float) r.querySim;
+			sd[i] = new ScoreDoc(luceneDocID,score);
+			
+			i++;
+		
+		}
+		TopDocs td = new TopDocs(new TotalHits(sd.length, TotalHits.Relation.EQUAL_TO),sd);
+		return td;
 	}
 
 	private static int extractTopicNo(Topic t) {

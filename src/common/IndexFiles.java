@@ -1,10 +1,9 @@
 
-package trec;
+package common;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
@@ -19,16 +18,12 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Version;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
-
-import edu.stanford.nlp.ie.AbstractSequenceClassifier;
-import edu.stanford.nlp.ie.crf.CRFClassifier;
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.util.Triple;
 
 public class IndexFiles {
 
@@ -37,7 +32,7 @@ public class IndexFiles {
 		JsonFactory f = new MappingJsonFactory();
 		JsonParser jp = null;
 		try {
-			File fl = new File(Constants.FILE_NAME);
+			File fl = new File(Constants.FILE_NAME2);
 			jp = f.createJsonParser(fl);
 		} catch (JsonParseException e1) {
 			e1.printStackTrace();
@@ -51,8 +46,6 @@ public class IndexFiles {
 		/// String docsPath = null;
 		boolean append = true;
 		boolean createindex = true; // re index all
-		boolean nerIndex = true;
-		boolean onlyTitleNer = true;
 
 		Directory directory = null;
 		try {
@@ -61,23 +54,18 @@ public class IndexFiles {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		Analyzer analyzer = new EnglishAnalyzer(); // ..standard english word tokenization
-		String serializedClassifier = "/home/i3/Documents/samford-ner-4/stanford-ner-4.0.0/classifiers/english.all.3class.distsim.crf.ser.gz";
-		AbstractSequenceClassifier<CoreLabel> classifier = null;
-		try {
-			classifier = CRFClassifier.getClassifier(serializedClassifier);
-		} catch (ClassCastException | ClassNotFoundException | IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
+		String stopFilePath = "/home/i3/eclipse-workspace/Relevance-Model/src/resources/smart-stopwords";
+        EnglishAnalyzerWithSmartStopword engAnalyzer = new EnglishAnalyzerWithSmartStopword(stopFilePath);
+        Analyzer analyzer = engAnalyzer.setAndGetEnglishAnalyzerWithSmartStopword();
+        System.out.println(analyzer.toString());
+		//Analyzer analyzer = new EnglishAnalyzer(); // ..standard english word tokenization
 		if (createindex) {
 			try {
 				System.out.println("Indexing to directory '" + indexPath + "'...");
 
 				// Analyzer analyzer = new StandardAnalyzer();
 				IndexWriterConfig config = new IndexWriterConfig(analyzer);
-				// System.out.println(config.getSimilarity().toString());
+				//System.out.println(config.getSimilarity().toString());
 				if (!append) {
 					// Create a new index in the directory, removing any
 					// previously indexed documents:
@@ -107,14 +95,9 @@ public class IndexFiles {
 
 					r = ParsingOnly.readOneReport3(jp);
 					
-					/*if(i<517000)
-						continue;
-					*/
-					if(i>=517000)
-						break;
 					if (r == null)
 						continue;// Add fields to the document
-
+					
 					// if(r.id.equals("-1"))
 					// break;
 
@@ -145,86 +128,24 @@ public class IndexFiles {
 
 					// this for making vectors
 					FieldType ft = new FieldType(TextField.TYPE_STORED);
+					//ft.setIndexOptions(org.apache.lucene.index.FieldInfo.IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS);
 					ft.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS);
 					ft.setStoreTermVectors(true);
 					ft.setStoreTermVectorOffsets(true);
 					ft.setStoreTermVectorPositions(true);
 					ft.setStoreTermVectorPayloads(true);
 					ft.setStored(true);
-					boolean unique_index = false;
 
-					// try to concatenate title with content a few times
-					if (unique_index) {
+					if (r.content != null) {
 
-						if (r.content != null) {
-							String buffer = r.content;
-							if (r.title != null && r.title.length() != 0) {
-								int factor = (int) Math
-										.round(Math.sqrt(r.content.length() / (double) r.title.length()));
-
-								for (int m = 0; m < factor; m++) {
-									buffer += r.title;
-								}
-							}
-							Field content = new Field("content", buffer, ft);
-
-							// content.term
-							d.add(content);
-						} else {
-							Field content = new Field("content", "", ft);
-							d.add(content);
-						}
-
+						Field content = new Field("content", r.content, ft);
+						// content.term
+						d.add(content);
+					} else {
+						Field content = new Field("content", "", ft);
+						d.add(content);
 					}
 
-					else {
-						if (r.content != null) {
-
-							Field content = new Field("content", r.content, ft);
-							// content.term
-							d.add(content);
-							if (nerIndex && !onlyTitleNer) {
-								List<Triple<String, Integer, Integer>> triples = classifier
-										.classifyToCharacterOffsets(r.content);
-								StringBuffer sb = new StringBuffer();
-								int len = 0;
-								for (Triple<String, Integer, Integer> trip : triples) {
-									String tag = trip.first();
-									String s = r.content.substring(trip.second, trip.third);
-									//String toAppend = tag + "/" + s + " ";
-									String toAppend = s+", ";
-									sb.append(toAppend);
-									len += toAppend.length();
-									
-									if(len>28000)
-										break;
-									/*
-									 * System.out.
-									 * printf("%s over string: <%s> character offsets [%d, %d) in sentence %d.%n",
-									 * trip.first(), str.substring(trip.second, trip.third) ,trip.second(),
-									 * trip.third, j);
-									 */
-								}
-								String nersc =  sb.toString();
-								if(nersc==null)
-									nersc = "";
-								Field contentner = new Field("contentner", nersc,ft);
-								d.add(contentner);
-							}
-							// if only title ner then add content ner as ""
-							if(nerIndex && onlyTitleNer) {
-								Field contentner = new Field("contentner", "", ft);
-								d.add(contentner);
-							}
-						} else { // content is empty
-							Field content = new Field("content", "", ft);
-							d.add(content);
-							if (nerIndex) {
-								Field contentner = new Field("contentner", "", ft);
-								d.add(contentner);
-							}
-						}
-					}
 					if (r.date != null) {
 						Field date = new Field("date", r.date, StringField.TYPE_STORED);
 						// date.
@@ -248,38 +169,14 @@ public class IndexFiles {
 					if (r.title != null) {
 
 						Field title = new Field("title", r.title, ft);
+						// Field title = new Field("title", r.title,
+						// TextField.TYPE_STORED,Field.TermVector.YES);
 						d.add(title);
-						if (nerIndex) {
-							List<Triple<String, Integer, Integer>> triples = classifier
-									.classifyToCharacterOffsets(r.title);
-							StringBuffer sb = new StringBuffer();
-							for (Triple<String, Integer, Integer> trip : triples) {
-								sb.append(r.title.substring(trip.second, trip.third) + ", ");
-								/*
-								 * System.out.
-								 * printf("%s over string: <%s> character offsets [%d, %d) in sentence %d.%n",
-								 * trip.first(), str.substring(trip.second, trip.third) ,trip.second(),
-								 * trip.third, j);
-								 */
-							}
-							String nerst =  sb.toString();
-							if(nerst==null)
-								nerst = "";
-							Field titlener = new Field("titlener", nerst, ft);
-							// Field title = new Field("title", r.title,
-							// TextField.TYPE_STORED,Field.TermVector.YES);
-							d.add(titlener);
-						}
-
 					} else {
 						Field title = new Field("title", "", ft);
 						// Field title = new Field("title", r.title,
 						// TextField.TYPE_STORED,Field.TermVector.YES);
 						d.add(title);
-						if (nerIndex) {
-							Field titlener = new Field("titlener", "", ft);
-							d.add(titlener);
-						}
 					}
 
 					if (r.url != null) {
@@ -323,6 +220,7 @@ public class IndexFiles {
 			System.out.println("Index already in directory '" + indexPath + "'...");
 
 	}
+
 
 	public static void main(String[] args) {
 		createWapoIndex();
