@@ -346,6 +346,7 @@ lambda	title_len	content_len		score		normalized_add
 "		"			"				0.3931		no
 "		"			"				0.5259(2019)no		
 0.1		"			"				0.3973	*	no
+0.1		"			80				0.3943	*	no
 "		"			"				0.3787		yes
 
 ----------------------------------------------------------------
@@ -366,11 +367,12 @@ ndcg_cut_5				all	0.3898	lambda = 0.9
 ndcg_cut_5				all 0.3958	lambda = 1
 
 -------------------------------------------------------------
-# content + titlener query+lambda*content_query_boost+(1-lambda)*titlener_query_boost
-ndcg_cut_5            	all	0.3969 lambda=0.8
-ndcg_cut_5            	all	0.3961 lambda=0.6*vecct
+# content + titlener query+lambda*content_query_boost+(1-lambda)*titlener_query_boost(applied on title, titlener)
+ndcg_cut_5            	all	0.3969 lambda=0.8   			3993
+ndcg_cut_5            	all	0.3952 lambda=0.7				3991
+ndcg_cut_5            	all	0.3961 lambda=0.6*vecct			3981
 ndcg_cut_5            	all	0.3941	lambda = 0.5
-ndcg_cut_5            	all	0.5254(2019)*
+ndcg_cut_5            	all	0.5254(2019)*	lambda=0.6				5252
 -------------------------------------------------------
 vector+content-nerquery
 ----------------------------------------------------
@@ -385,7 +387,8 @@ lambda = 0.5 0.4063
 word2vec only
 2018 35 words
 0.3175 
-
+-------------------------------------
+0.3544
 -------------------------------------
 Qmix
 title 30*0.4,mincoccur = 1:  content 50*0.6,minoccur=2 ---> 3894
@@ -424,3 +427,12 @@ docvec-2018-unweightedSum-words=25
  ./trec_eval ../qrels/bqrels.exp-gains.txt -m ndcg_cut ../results/res2020-07-08_22-31-36.res 
 ndcg_cut_5            	all	0.2736****
 
+---------------------------------------
+vector + nertitle list merge 0.6
+0.2756
+
+----------------------
+content80*0.7; title20*0.3; nertitle30*0.3
+.3911
+content80*0.9; title20*0.1; nertitle20*0.1
+.3911

@@ -57,6 +57,8 @@ public class Main {
 			LocalDateTime now = LocalDateTime.now();  
 			//System.out.println(dtf.format(now));  
 			String outName = Constants.OUTFILE_NAME+dtf.format(now)+".res";
+			//String outName = "IRISINews3";//+".res";
+
 			System.out.println(outName);
 			
 			File myObj = new File(outName);
@@ -79,7 +81,8 @@ public class Main {
         boolean vectorMode = Constants.VECTOR_NEEDED;
         ReportToVectors rvs = null;
         if(vectorMode) {
-        	 rvs = new ReportToVectors(Constants.DOCUMENT_TERMS_WEIGHTS_DUMP_FILE, Constants.VECTOR_SUM_WORDS);
+        	 rvs = new ReportToVectors(Constants.DOCUMENT_TERMS_WEIGHTS_DUMP_FILE, 
+        			 Constants.VECTOR_SUM_WORDS);
     		
         }
         
@@ -92,6 +95,7 @@ public class Main {
         	System.out.println(++cnt+". Executing topic: "+t.number);
         	// for each topic retrieve 100 documents
         	List<Tuple> answers = LuceneQuery.getResultsWrapper(r, isearcher,ireader,rvs);
+        	
         	//LuceneQuery.getResultsTopTermsContent(r, isearcher,ireader);
         	/*
         	 * Here we try correlation related data to learn
@@ -103,7 +107,7 @@ public class Main {
         	for(Tuple answer : answers) {
         		if(answer!=null) {
 	        		//System.out.printf("%d Q0 %s %d %.1f %s\n",extractTopicNo(t),answer.docId,count,answer.score,answer.codename);
-	        		output.printf("%d Q0 %s %d %f %s\n",extractTopicNo(t),answer.docId,count+1,answer.score,"docvec25-2019");//answer.codename);
+	        		output.printf("%d Q0 %s %d %f %s\n",extractTopicNo(t),answer.docId,count+1,answer.score,"IRISINews3");//answer.codename);
 	        		output.flush();
 	        		count++;
         		}

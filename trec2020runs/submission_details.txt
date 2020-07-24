@@ -1,0 +1,24 @@
+**IRISINews1: top80 terms extracted from conent by tfidf and applied 
+on title and content.
+
+**IRISINews2: top80 terms from content table and vector similarity combined with 0.6 weight for content and 0.4 for 
+vector.
+
+IRISINews3: NER with weighted query from content. querymix 0.8. ner weighted query applied on title and titlener. content query is as usual. top 50 terms query weighted by tfidf.
+2019->5253 2018->3993
+
+**IRISINews4: 50 terms title and 20 terms content boosted query. both quey list was joined by lambda * title + (1-lambda)*content with lambda = 0.1
+titlequery applied only on title
+
+
+IRISINews5: 50 terms title and 20 terms content boosted query. both quey list was joined by lambda * title + (1-lambda)*content with lambda = 0.1
+
+this list is also weighted merged with vector list
+
+news4list*(0.6) + docveclist*(1-0.6)
+ndcg(2018) = 0.3997
+ndcg(2018) = 0.5160
+
+
+
+
